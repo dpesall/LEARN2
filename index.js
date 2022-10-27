@@ -1,9 +1,20 @@
 require('dotenv').config();
+const http = require('http');
+const https = require('https')
 const fs = require('fs');
 const express = require('express');
 const app = express();
-const AWS = require('aws-sdk');
 
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/cert.pem', 'utf8');
+const ca = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/chain.pem', 'utf8');
+
+const credentials = {
+    key: privateKey,
+    cert: certificate,
+    ca: ca
+}
+const AWS = require('aws-sdk');
 app.use(express.static('public/'));
 
 AWS.config.update({
@@ -193,6 +204,14 @@ app.get('/aws', async (req, res) => {
     });
 });
 
-app.listen(8080,()=>{
-    console.log('Web Server running on port', 8080);
+const httpPort = 80
+const httpsPort = 443
+const httpsServer = https.createServer(credentials, app);
+const httpServer = http.createServer(app);
+httpServer.listen(httpPort, () => {
+    console.log("HTTPS Server running on port", httpPort);
 });
+httpsServer.listen(httpsPort, () => {
+    console.log("HTTPS Server running on port", httpsPort);
+});
+
