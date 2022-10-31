@@ -191,6 +191,11 @@ body {
     pointer-events:none;
 }
 
+.gui-img{
+    margin: 2%;
+    text-align:center;
+}
+
 .image-main-border {
     border: 3px solid grey;
 }
