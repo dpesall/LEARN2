@@ -1041,6 +1041,8 @@ function initializeDates(date) {
 }
 
 function updatePreview(isChecked) {
+    toggleDaySelection(isChecked);
+
     previewsEnabled = isChecked;
     let previewCheckbox = document.getElementById('preview-switch-background-id');
     if(dark) {
@@ -1166,14 +1168,12 @@ function updateTheme(isChecked) {
 function setDay(day) {
     let forecast = document.getElementById('forecast-day');
     forecast.textContent = day;
-    let daySelection = document.getElementById('day-selection');
-    daySelection.style.display = 'none';
     updateDay(0, false);
 }
 
-function toggleDaySelection() {
+function toggleDaySelection(isChecked) {
     let daySelection = document.getElementById('day-selection');
-    daySelection.style.display = daySelection.style.display === 'block' ? 'none' : 'block';
+    daySelection.style.display = isChecked ? 'block' : 'none';
 }
 
 function quickUpdateFromCache(cache) {
@@ -1271,8 +1271,6 @@ function updateImages() {
 function updateDay(delta, modifyForecast, shouldUpdateImages = true) {
     let dateInitialize = document.getElementById('init');
     let forecast = document.getElementById('forecast-day');
-    let daySelection = document.getElementById('day-selection');
-    daySelection.style.display = 'none';
     let currentDateArr = dateInitialize.textContent.split(' ');
     let currentDate1 = new Date(`${currentDateArr[1]} ${currentDateArr[2]} ${currentDateArr[0]}`);
     let currentDate2 = new Date(`${currentDateArr[1]} ${currentDateArr[2]} ${currentDateArr[0]}`);
@@ -1410,11 +1408,6 @@ function updateForecastSlider(day) {
     let forecastSlider = document.getElementById('day-slider-id');
     forecastSlider.value = day;
 }
-
-// Day Selection
-document.getElementById('forecast-day').addEventListener('click', function() {
-    toggleDaySelection();
-});
 
 // Model Selection
 document.getElementById('option-dense').addEventListener('click', function() {

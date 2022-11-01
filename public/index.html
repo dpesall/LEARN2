@@ -86,15 +86,32 @@
               <div class="control-panel control-panel-settings-2" id="change-day">
                 <div class="container-fluid control-panel-settings">
                   <div class="row">
-                    <div class="col-sm-5 extension padding-main control-panel-label">
-                      Forecast Day:
+                    <div class="container-fluid">
+                      <div class="row" style="text-align: center;">
+                        <div class="col-sm-4">
+                          <div class="extension padding-main control-panel-label">
+                            Forecast Day:
+                          </div>
+                        </div>
+                        <div class="col-sm-4">
+                          <div class="extension padding-main">
+                            <button class="btn btn-secondary" id="forecast-down">&#8592;</button>
+                            <div class="btn btn-primary button-no-pointer" style="width: 50px;" id="forecast-day">1</div>
+                            <button class="btn btn-secondary" id="forecast-up">&#8594;</button>
+                          </div>
+                        </div>
+                        <div class="col-sm-4" style="text-align: right; padding-top: 1%;">
+                          <label class="scale-switch-label preview">
+                            <input id="preview-switch-id" class="theme-switch preview-switch" type="checkbox">
+                            <span class="slider round" id="preview-switch-background-id">
+                              <span class="on preview-on">Previews</span>
+                              <span class="off preview-off">Previews</span>
+                            </span>
+                          </label>
+                        </div>
+                      </div>
                     </div>
-                    <div class="col-sm-7 extension padding-main">
-                      <button class="btn btn-secondary" id="forecast-down">&#8592;</button>
-                      <button class="btn btn-primary button-no-pointer" style="width: 50px;" id="forecast-day">1</button>
-                      <button class="btn btn-secondary" id="forecast-up">&#8594;</button>
-                    </div>
-                    <div clas="container-fluid">
+                    <div class="container-fluid">
                       <div class="row">
                         <div class="day-slider-wrapper centered-text">
                           <input class="day-slider" type="range" id="day-slider-id" name="volume" min="1" max="10" step="1" value="1">
@@ -117,17 +134,6 @@
                     </div>
                   </div>
                   <div id="day-selection">
-                    <div class="row preview">
-                      <div class="col">
-                        <label class="scale-switch-label">
-                          <input id="preview-switch-id" class="theme-switch preview-switch" type="checkbox">
-                          <div class="slider round" id="preview-switch-background-id">
-                            <span class="on preview-on">Preview</span>
-                            <span class="off preview-off">Preview</span>
-                          </div>
-                        </label>
-                      </div>
-                    </div>
                     <div class="row" id="preview-thumbnails">
                       <div class="container-fluid">
                         <div class="row padding-main">
