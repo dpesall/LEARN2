@@ -259,6 +259,13 @@ li{
     top: 5px;
 }
 
+.submit-spinner {
+    display: none;
+    position: relative;
+    left: 2px;
+    top: 5px;
+}
+
 .lock-image {
     height: 40px;
     padding-right: 2%;

@@ -96,6 +96,9 @@ function submitFeedback() {
     let emailValue = document.getElementById('feedback-email').value;
     let emailSuggestionValue = document.getElementById('suggestion-email').value;
 
+    let submitSpinner = document.getElementById('submit-spinner-id');
+    submitSpinner.style.display = 'inline-block';
+
     let description = '';
     if(feedbackType === 'Issue') {
         description = document.getElementById('additional-details-box').value;
@@ -125,6 +128,7 @@ function submitFeedback() {
         } else {
             log('Failed to send feedback. Code: ' + code);
         }
+        submitSpinner.style.display = 'none';
     });
 }
 
@@ -139,8 +143,8 @@ function updateFeedbackType(type) {
     let feedbackType = document.getElementById('button-feedback-dropdown');
     let submitButton = document.getElementById('feedback-submit-section');
 
+    submitButton.style.display = 'flex';
     feedbackType.innerText = type;
-    submitButton.style.display = 'block';
 
     switch(type) {
         case 'Suggestion':

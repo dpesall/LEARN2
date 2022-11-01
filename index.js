@@ -190,7 +190,7 @@ app.get('/feedback', async (req, res) => {
 
     transporter.sendMail(mailOptions, (error, info) =>{
         if(error) {
-            // console.log(error);
+            console.log(error);
             res.sendStatus(401);
         }
         else {
