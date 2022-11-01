@@ -84,6 +84,92 @@ Array.prototype.min = function() {
     return Math.min.apply(null, this);
 };
 
+function submitFeedback() {
+    let feedbackType = document.getElementById('button-feedback-dropdown').innerText;
+    let initValue = document.getElementById('feedback-init').value;
+    let threshValue = document.getElementById('feedback-threshold').value;
+    let modelValue = document.getElementById('feedback-model').value;
+    let resValue = document.getElementById('feedback-res').value;
+    let dayValue = document.getElementById('feedback-day').value;
+    let requestForContact = document.getElementById('contact-checkbox').checked;
+    let requestForContactSuggestion = document.getElementById('contact-checkbox-suggestion').checked;
+    let emailValue = document.getElementById('feedback-email').value;
+    let emailSuggestionValue = document.getElementById('suggestion-email').value;
+
+    let description = '';
+    if(feedbackType === 'Issue') {
+        description = document.getElementById('additional-details-box').value;
+    } else {
+        description = document.getElementById('feedback-box').value;
+    }
+
+    let feedbackInfo = {};
+    if(feedbackType === 'Issue') {
+        feedbackInfo = `Type: ${feedbackType}\nInitialization Date: ${initValue}\nThreshold Value:${threshValue}\nModel: ${modelValue}\nResolution: ${resValue}\nForecast Day: ${dayValue}\nDescription: ${description}\nRequest For Contact: ${requestForContact}`;
+        if(requestForContact) {
+            feedbackInfo += '\nEmail: ' + emailValue;
+        }
+    } else {
+        feedbackInfo = `Type: ${feedbackType}\nSuggestion: ${description}\nRequest For Contact: ${requestForContactSuggestion}`;
+        if(requestForContactSuggestion) {
+            feedbackInfo += '\nEmail: ' + emailSuggestionValue;
+        }
+    }
+    let param = {
+        text: feedbackInfo
+    }
+    $.get(window.location.href + 'feedback', param, function(code) {
+        if(code === 'OK') {
+            let successText = document.getElementById('feedback-success-id');
+            successText.style.display = 'flex';
+        } else {
+            log('Failed to send feedback. Code: ' + code);
+        }
+    });
+}
+
+function toggleFeedback() {
+    let feedbackSection = document.getElementById('feedback-section');
+    feedbackSection.style.display = feedbackSection.style.display === 'block' ? 'none' : 'block';
+}
+
+function updateFeedbackType(type) {
+    let suggestion = document.getElementById('suggestion-section');
+    let issue = document.getElementById('issue-section');
+    let feedbackType = document.getElementById('button-feedback-dropdown');
+    let submitButton = document.getElementById('feedback-submit-section');
+
+    feedbackType.innerText = type;
+    submitButton.style.display = 'block';
+
+    switch(type) {
+        case 'Suggestion':
+            suggestion.style.display = 'flex';
+            issue.style.display = 'none';
+            break;
+        case 'Issue':
+            suggestion.style.display = 'none';
+            issue.style.display = 'flex';
+            populateIssueBoxes();
+            break;
+    }
+}
+
+function populateIssueBoxes() {
+    let initBox = document.getElementById('feedback-init');
+    let threshBox = document.getElementById('feedback-threshold');
+    let modelBox = document.getElementById('feedback-model');
+    let resBox = document.getElementById('feedback-res');
+    let dayBox = document.getElementById('feedback-day');
+
+    initBox.value = currentLabelDate;
+    threshBox.value = sigmaToPercentile(false);
+    modelBox.value = modelType;
+    resBox.value = currentResolution === 'high' ? 'High' : 'Low';
+    dayBox.value = forecastDayIndex;
+}
+
+
 function loadCanvas() {
     let forecastCanvas = document.getElementById('forecast-canvas');
     let img = document.getElementById('forecast-image');
@@ -891,7 +977,13 @@ function fitVotePrefix(date) {
     }
 }
 
+function hideFeedbackSuccessText() {
+    let feedbackSuccess = document.getElementById('feedback-success-id');
+    feedbackSuccess.style.display = 'none';
+}
+
 function retrieveImages() {
+    hideFeedbackSuccessText();
     let spinner = document.getElementById('loading-spinner-id');
     let img = document.getElementById('forecast-image');
 
@@ -1413,19 +1505,15 @@ function updateForecastSlider(day) {
 document.getElementById('option-dense').addEventListener('click', function() {
     updateModel('Dense');
 });
-
 document.getElementById('option-convolutional').addEventListener('click', function() {
     updateModel('Convolutional');
 });
-
 document.getElementById('option-voting').addEventListener('click', function() {
     updateModel('Voting');
 });
-
 document.getElementById('option-ecmwf').addEventListener('click', function() {
     updateModel('ECMWF');
 });
-
 document.getElementById('option-gefs').addEventListener('click', function() {
     updateModel('GEFS');
 });
@@ -1434,11 +1522,9 @@ document.getElementById('option-gefs').addEventListener('click', function() {
 document.getElementById('option-line').addEventListener('click', function() {
     updateChart('line', false);
 });
-
 document.getElementById('option-stacked').addEventListener('click', function() {
     updateChart('line', true);
 });
-
 document.getElementById('option-bar').addEventListener('click', function() {
     updateChart('bar', false);
 });
@@ -1447,11 +1533,9 @@ document.getElementById('option-bar').addEventListener('click', function() {
 document.getElementById('option-right').addEventListener('click', function() {
     setChartLocation('Right');
 });
-
 document.getElementById('option-left').addEventListener('click', function() {
     setChartLocation('Left');
 });
-
 document.getElementById('option-both').addEventListener('click', function() {
     setChartLocation('Both');
 });
@@ -1460,18 +1544,45 @@ document.getElementById('option-both').addEventListener('click', function() {
 document.getElementById('button-high-res').addEventListener('click', function() {
     updateResolution('high');
 });
-
 document.getElementById('button-low-res').addEventListener('click', function() {
     updateResolution('low');
+});
+
+// Feedback Toggle Button
+document.getElementById('button-feedback-id').addEventListener('click', function() {
+    toggleFeedback();
+    hideFeedbackSuccessText();
+});
+
+// Feedback Submit Button
+document.getElementById('button-submit-id').addEventListener('click', function() {
+    submitFeedback();
+});
+
+// Feedback Selection
+document.getElementById('option-suggestion').addEventListener('click', function() {
+    updateFeedbackType('Suggestion');
+});
+document.getElementById('option-issue').addEventListener('click', function() {
+    updateFeedbackType('Issue');
 });
 
 // Forecast Increment Buttons
 document.getElementById('forecast-up').addEventListener('click', function() {
     updateDay(1, true);
 });
-
 document.getElementById('forecast-down').addEventListener('click', function() {
     updateDay(-1, true);
+});
+
+document.getElementById('contact-checkbox').addEventListener('change', function() {
+    let emailField = document.getElementById('email-row');
+    emailField.style.display = this.checked ? 'flex' : 'none';
+});
+
+document.getElementById('contact-checkbox-suggestion').addEventListener('change', function() {
+    let emailField = document.getElementById('email-row-suggestion');
+    emailField.style.display = this.checked ? 'flex' : 'none';
 });
 
 // Forecast Slider
@@ -1489,7 +1600,6 @@ document.getElementById('preview-switch-id').addEventListener('change', function
 document.getElementById('threshold-up').addEventListener('click', function() {
     updateMean(currentSigma + .5);
 });
-
 document.getElementById('threshold-down').addEventListener('click', function() {
     updateMean(currentSigma - .5);
 });
@@ -1513,7 +1623,6 @@ document.getElementById('init-up').addEventListener('click', function() {
         })
     }
 });
-
 document.getElementById('init-down').addEventListener('click', function() {
     if(currentInitialize > 0 && canMoveDays) {
         canMoveDays = false;

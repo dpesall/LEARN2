@@ -5,6 +5,7 @@ const app = express();
 const http = require('http');
 const https = require('https');
 const AWS = require('aws-sdk');
+const nodemailer = require('nodemailer');
 
 app.use(express.static('public/'));
 
@@ -163,6 +164,42 @@ app.get('/aws3', async (req, res) => {
     });
 });
 
+let transporter = nodemailer.createTransport({
+    service: 'Outlook365',
+    host: 'smtp.office365.com',
+    // port: '587',
+    tls: {
+        ciphers: "SSLv3",
+        rejectUnauthorized: false,
+    },
+    auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD
+    }
+});
+
+app.get('/feedback', async (req, res) => {
+    let emailText = req.query.text;
+
+    let mailOptions = {
+        from: 'learn2.feedback@outlook.com',
+        to: 'pesallandrew@gmail.com',
+        subject: 'LEARN2 Feedback Submission',
+        text: emailText
+    };
+
+    transporter.sendMail(mailOptions, (error, info) =>{
+        if(error) {
+            // console.log(error);
+            res.sendStatus(401);
+        }
+        else {
+            // console.log(info);
+            res.sendStatus(200);
+        }
+    });
+});
+
 app.get('/aws', async (req, res) => {
     let rootName = req.query.file;
     let fileNames = [];
@@ -196,7 +233,6 @@ app.get('/aws', async (req, res) => {
 });
 
 const args = process.argv;
-
 if(args[2] !== 'https') {
     app.listen(8080,()=>{
         console.log('Web Server running on port', 8080);
