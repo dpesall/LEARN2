@@ -210,6 +210,14 @@ body {
     padding: 15px;
 }
 
+.form-check-input:checked {
+    background-color: #0d6efd;
+}
+
+.form-check-input-light:checked {
+    background-color:#77c743;
+}
+
 .gui-section{
     display: flex;
 }
