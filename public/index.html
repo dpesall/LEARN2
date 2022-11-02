@@ -30,7 +30,7 @@
       <img src="resources/logo.png" class="img-fluid" style="width: 200px" alt="Responsive image">
       LEARN&sup2;
       </div>
-      <h3 class="learn2">Landfalling Event Atmospheric River Neural Network</h3>
+      <h3 class="learn2">Landfalling Event Atmospheric River Neural Network - Extreme Precipitation Tool</h3>
     </div>
     <div class="container-fluid">
       <div class="row centered-text">
@@ -39,7 +39,7 @@
             <div class="row">
               <div class="col-sm-7">
                 <div style="padding-bottom: 2%;" id="main-forecast-label">
-                  Extreme Precipitation Forecast
+                  Likelihood of Threshold Exceedance
                   <div id="main-forecast-date">
                     Jan 01, 2001
                   </div>
@@ -207,58 +207,7 @@
             <div class="btn btn-primary button-feedback" id="button-feedback-id">Submit Feedback</div>
             <div class="padding-main"></div>
             <div class="container-fluid" id="feedback-section">
-              <div class="row">
-                <div class="col-6 feedback-left">
-                  Type:
-                </div>
-                <div class="col-6 feedback-right">
-                  <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" style="width: 150px;" id="button-feedback-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                      (select type)
-                    </button>
-                    <ul class="dropdown-menu">
-                      <li><a class="dropdown-item" id="option-suggestion">Suggestion</a></li>
-                      <li><a class="dropdown-item" id="option-issue">Issue</a></li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div class="row" id="suggestion-section" style="display: none;">
-                <div class="container-fluid">
-                  <div class="row">
-                    <div class="col-4 feedback-left" style="padding: 0;">
-                      Suggestion:
-                    </div>
-                    <div class="col-8">
-                      <label for="feedback-box"></label>
-                      <textarea id="feedback-box" name="feedback-box-name"></textarea>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-sm-4 feedback-left">
-                      <div title="Check this box if you would like to be contacted about this issue and notified when it is resolved.">
-                        Request for Contact:
-                      </div>
-                    </div>
-                    <div class="col-sm-8 feedback-fields">
-                      <div class="form-check" style="padding-top: 8px;">
-                        <input class="form-check-input" type="checkbox" value="" id="contact-checkbox-suggestion" title="Check this box if you would like to be contacted about this issue and notified when it is resolved.">
-                        <label class="form-check-label" for="contact-checkbox-suggestion"></label>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="row" style="display: none;" id="email-row-suggestion">
-                    <div class="col-4 feedback-left" style="padding: 0 10px 10px 10px;">
-                      Email:
-                    </div>
-                    <div class="col-8 feedback-fields">
-                      <label for="suggestion-email"></label>
-                      <input type="text" id="suggestion-email" class="feedback-input">
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="row" id="issue-section" style="display: none;">
+              <div class="row" id="issue-section">
                 <div class="container-fluid">
                   <div class="row">
                     <div class="col-sm-4 feedback-left">

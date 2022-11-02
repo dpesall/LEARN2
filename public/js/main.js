@@ -12,8 +12,13 @@ const INITIALIZE_HISTORY_LIMIT = 5;
 const DAY_MS = 86400000;
 
 // ratios of inner-map to full forecast and threshold images image
-const xRatio = 2118 / 4599;
-const yRatio = 3685 / 4768;
+const topToImage = 162;
+const leftToImage = 810;
+const xWidth = 3910;
+const yHeight = 4768;
+
+const xRatio = 2011 / xWidth;
+const yRatio = 3686 / yHeight;
 const xRatioThreshold = 1732 / 3463;
 const yRatioThreshold = 3007 / 4092;
 
@@ -181,14 +186,11 @@ function loadCanvas() {
     let thresholdCanvas = document.getElementById('threshold-canvas');
     let thresholdImage = document.getElementById('threshold-image');
 
-    let yHeight = 162;
-    let yHeight2 = 163;
-
-    let xOffset = img.width * (704 / 4599);
-    let yOffset = img.height * (yHeight / 4768);
+    let xOffset = img.width * (leftToImage / xWidth);
+    let yOffset = img.height * (topToImage / yHeight);
 
     let xOffset2 = thresholdImage.width * (707 / 3463);
-    let yOffset2 = thresholdImage.height * (yHeight2 / 4092);
+    let yOffset2 = thresholdImage.height * (topToImage / 4092);
 
     let useYRatio = yRatio;
     let useYRatioThreshold = yRatioThreshold;
@@ -863,8 +865,8 @@ function createGrid() {
     x *= xRatio;
     y *= yRatio;
 
-    let xOffset = width * (704 / 4599);
-    let yOffset = height * (163 / 4768);
+    let xOffset = width * (leftToImage / xWidth);
+    let yOffset = height * (topToImage / yHeight);
 
     let grid = '';
     for(let i = 0; i < ySteps; i++) {
@@ -975,7 +977,7 @@ function pad(n) {
 function fitVotePrefix(date) {
     let dateArr = date.split('-');
     if(modelType === 'Voting') {
-        return dateArr[0] + '' + pad(dateArr[1]) + '' + pad(dateArr[2]) + '_';
+        return dateArr[0] + '' + dateArr[1] + '' + dateArr[2] + '_';
     } else {
         return '';
     }
@@ -1563,14 +1565,6 @@ document.getElementById('button-submit-id').addEventListener('click', function()
     submitFeedback();
 });
 
-// Feedback Selection
-document.getElementById('option-suggestion').addEventListener('click', function() {
-    updateFeedbackType('Suggestion');
-});
-document.getElementById('option-issue').addEventListener('click', function() {
-    updateFeedbackType('Issue');
-});
-
 // Forecast Increment Buttons
 document.getElementById('forecast-up').addEventListener('click', function() {
     updateDay(1, true);
@@ -1581,11 +1575,6 @@ document.getElementById('forecast-down').addEventListener('click', function() {
 
 document.getElementById('contact-checkbox').addEventListener('change', function() {
     let emailField = document.getElementById('email-row');
-    emailField.style.display = this.checked ? 'flex' : 'none';
-});
-
-document.getElementById('contact-checkbox-suggestion').addEventListener('change', function() {
-    let emailField = document.getElementById('email-row-suggestion');
     emailField.style.display = this.checked ? 'flex' : 'none';
 });
 
