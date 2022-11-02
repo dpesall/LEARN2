@@ -864,8 +864,7 @@ function createGrid() {
 
     x *= xRatio;
     y *= yRatio;
-
-    let xOffset = width * (leftToImage / xWidth);
+    let xOffset = width * ((leftToImage + 20) / (xWidth + 20));
     let yOffset = height * (topToImage / yHeight);
 
     let grid = '';
