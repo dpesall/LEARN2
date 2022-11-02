@@ -8,6 +8,7 @@ const dayButtons = document.querySelectorAll('.btn-light');
 const lightPreview = document.querySelectorAll('.preview-switch');
 const resolution = document.querySelectorAll('.button-resolution');
 const contactCheckbox = document.querySelectorAll('.form-check-input-light');
+const activePreviewButton = document.querySelectorAll('.btn-outline-primary');
 
 const INITIALIZE_HISTORY_LIMIT = 5;
 const DAY_MS = 86400000;
@@ -1211,7 +1212,6 @@ function updateTheme(isChecked) {
         userManual.style.backgroundColor = '#0d6efd';
         modelButton.style.backgroundColor = '#0d6efd';
         dayChange.style.backgroundColor = '#292929';
-        dayChange.style.border = '5px solid black;';
         chartType.style.backgroundColor = '#0d6efd';
         buttonHighRes.style.backgroundColor = currentResolution === 'high' ? '#0d6efd' : '#212121';
         buttonHighRes.style.borderColor = '#0d6efd'
@@ -1256,6 +1256,10 @@ function updateTheme(isChecked) {
             contactCheckbox.classList.remove('form-check-input-light');
         });
 
+        activePreviewButton.forEach((activePreviewButton) => {
+            activePreviewButton.classList.add('btn-outline-primary');
+        });
+
     } else {
         // Set Light Theme
         controlPanel.style.backgroundColor = '#fff';
@@ -1279,7 +1283,6 @@ function updateTheme(isChecked) {
         mainHeader.style.backgroundColor = '#2d871933';
         mapSection.style.backgroundColor = '#efefef';
         dayChange.style.backgroundColor = '#fff';
-        dayChange.style.border = '0px solid black;';
         daySlider.style.accentColor = '#569630';
         thresholdSlider.style.accentColor = '#569630';
         pageBody.style.backgroundColor = '#2d871933';
@@ -1320,6 +1323,9 @@ function updateTheme(isChecked) {
 
         contactCheckbox.forEach((contactCheckbox) => {
             contactCheckbox.classList.add('form-check-input-light');
+        });
+        activePreviewButton.forEach((activePreviewButton) => {
+            activePreviewButton.classList.remove('btn-outline-primary');
         });
     }
 }
