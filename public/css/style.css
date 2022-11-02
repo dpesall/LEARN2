@@ -227,6 +227,10 @@ body {
     width: 50%;
 }
 
+#issue-section {
+    margin: 5% 0;
+}
+
 .showSingle {
     cursor: pointer;
 }
