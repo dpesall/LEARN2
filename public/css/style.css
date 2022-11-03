@@ -142,7 +142,7 @@ body {
 }
 
 .day-slider {
-    width: 70%;
+    width: 90%;
 }
 
 .day-slider-wrapper {
@@ -152,8 +152,8 @@ body {
 
 .day-slider-ticks {
     text-align: center;
-    padding-left: 13%;
-    padding-right: 13%;
+    padding-left: 4%;
+    padding-right: 4%;
     font-size: 12px;
 }
 
@@ -405,6 +405,11 @@ li{
 
 .slider.round:before {
     border-radius: 50%;
+}
+
+.slider-section {
+    text-align: right;
+    padding-top: 1%;
 }
 
 .theme-switch-label {
