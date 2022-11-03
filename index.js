@@ -128,11 +128,7 @@ function s3ListObjects(params, _callback) {
 let recentDate = '';
 function mostRecentAvailableDate(dateObject, dateOffset, prefix, suffix, _callback) {
     let date = dateObject.getFullYear() + '-' + pad(dateObject.getMonth() + 1) + '-' + pad(dateObject.getDate());
-    let tempPrefix = prefix;
-    if(prefix.includes('Vote_')) {
-        tempPrefix += dateObject.getFullYear() + '' + pad(dateObject.getMonth() + 1) + '' + pad(dateObject.getDate()) + '_';
-    }
-    let keyName = tempPrefix + date + suffix;
+    let keyName = prefix + date + suffix;
     s3.headObject({Bucket: bucket, Key: keyName}, function(err, metadata) {
         if(err) {
             dateObject.setDate(dateObject.getDate() - 1);
@@ -158,7 +154,6 @@ app.get('/aws3', async (req, res) => {
     let dateOffset = parseInt(req.query.offset);
     let prefix = req.query.prefix + req.query.model;
     let suffix = '_1_' + req.query.suffix + '.png';
-
     mostRecentAvailableDate(dateObject, dateOffset, prefix, suffix, function() {
         res.send(recentDate);
     });
