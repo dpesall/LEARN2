@@ -43,6 +43,10 @@ body {
     color: white;
 }
 
+.bs-btn-hover-bg-light{
+    
+}
+
  #button-high-res {
     background-color: #0d6efd;
     font-weight: bold;
@@ -210,6 +214,14 @@ body {
     padding: 15px;
 }
 
+.form-check-input:checked {
+    background-color: #0d6efd;
+}
+
+.form-check-input-light:checked {
+    background-color:#77c743;
+}
+
 .gui-section{
     display: flex;
 }
@@ -218,6 +230,11 @@ body {
     flex-direction: column;
     width: 50%;
 }
+
+#issue-section {
+    margin: 5% 0;
+}
+
 
 .showSingle {
     cursor: pointer;
@@ -447,6 +464,9 @@ li{
 }
 .light-hover:hover{
     background: #aeafae;
+}
+.light-hover:active {
+    background: #77c743;
 }
 
 #suggestion-section {
