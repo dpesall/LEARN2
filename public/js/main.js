@@ -959,6 +959,11 @@ function hideFeedbackSuccessText() {
     feedbackSuccess.style.display = 'none';
 }
 
+function hideFeedbackSuccessText() {
+    let feedbackSuccess = document.getElementById('feedback-success-id');
+    feedbackSuccess.style.display = 'none';
+}
+
 function retrieveImages() {
     hideFeedbackSuccessText();
     let spinner = document.getElementById('loading-spinner-id');
