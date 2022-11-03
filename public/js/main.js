@@ -797,7 +797,7 @@ function readCSV(shouldSet = false) {
     }
     $.get(window.location.href + 'aws3', param, function(date) {
         let csvParam = {
-            file: param.prefix + getModelPrefix() + fitVotePrefix(date) + date + '_',
+            file: param.prefix + getModelPrefix() + date + '_',
             suffix: param.suffix
         };
         updateDayLabel(date);
@@ -954,15 +954,6 @@ function pad(n) {
     return (n < 10) ? ('0' + n) : n;
 }
 
-function fitVotePrefix(date) {
-    let dateArr = date.split('-');
-    if(modelType === 'Voting') {
-        return dateArr[0] + '' + dateArr[1] + '' + dateArr[2] + '_';
-    } else {
-        return '';
-    }
-}
-
 function hideFeedbackSuccessText() {
     let feedbackSuccess = document.getElementById('feedback-success-id');
     feedbackSuccess.style.display = 'none';
@@ -986,7 +977,7 @@ function retrieveImages() {
     img.src = 'resources/blankForecast.png';
     $.get(window.location.href + 'aws3', param, function(date) {
         let imgParam = {
-            file: param.prefix + getModelPrefix() + fitVotePrefix(date) + date + '_',
+            file: param.prefix + getModelPrefix() + date + '_',
             suffix: param.suffix
         };
         currentLabelDate = date;
