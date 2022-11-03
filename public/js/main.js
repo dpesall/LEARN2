@@ -140,28 +140,7 @@ function submitFeedback() {
 function toggleFeedback() {
     let feedbackSection = document.getElementById('feedback-section');
     feedbackSection.style.display = feedbackSection.style.display === 'block' ? 'none' : 'block';
-}
-
-function updateFeedbackType(type) {
-    let suggestion = document.getElementById('suggestion-section');
-    let issue = document.getElementById('issue-section');
-    let feedbackType = document.getElementById('button-feedback-dropdown');
-    let submitButton = document.getElementById('feedback-submit-section');
-
-    submitButton.style.display = 'flex';
-    feedbackType.innerText = type;
-
-    switch(type) {
-        case 'Suggestion':
-            suggestion.style.display = 'flex';
-            issue.style.display = 'none';
-            break;
-        case 'Issue':
-            suggestion.style.display = 'none';
-            issue.style.display = 'flex';
-            populateIssueBoxes();
-            break;
-    }
+    populateIssueBoxes();
 }
 
 function populateIssueBoxes() {
