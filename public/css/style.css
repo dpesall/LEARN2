@@ -478,6 +478,10 @@ li{
     padding-top: 30px;
 }
 
+#suggestion-section {
+    padding-top: 30px;
+}
+
 table, th, td {
     border: 3px solid black;
 }
