@@ -7,6 +7,8 @@ const extension = '.png'
 const dayButtons = document.querySelectorAll('.btn-light');
 const lightPreview = document.querySelectorAll('.preview-switch');
 const resolution = document.querySelectorAll('.button-resolution');
+const contactCheckbox = document.querySelectorAll('.form-check-input-light');
+const activePreviewButton = document.querySelectorAll('.btn-outline-primary');
 
 const INITIALIZE_HISTORY_LIMIT = 5;
 const DAY_MS = 86400000;
@@ -140,28 +142,7 @@ function submitFeedback() {
 function toggleFeedback() {
     let feedbackSection = document.getElementById('feedback-section');
     feedbackSection.style.display = feedbackSection.style.display === 'block' ? 'none' : 'block';
-}
-
-function updateFeedbackType(type) {
-    let suggestion = document.getElementById('suggestion-section');
-    let issue = document.getElementById('issue-section');
-    let feedbackType = document.getElementById('button-feedback-dropdown');
-    let submitButton = document.getElementById('feedback-submit-section');
-
-    submitButton.style.display = 'flex';
-    feedbackType.innerText = type;
-
-    switch(type) {
-        case 'Suggestion':
-            suggestion.style.display = 'flex';
-            issue.style.display = 'none';
-            break;
-        case 'Issue':
-            suggestion.style.display = 'none';
-            issue.style.display = 'flex';
-            populateIssueBoxes();
-            break;
-    }
+    populateIssueBoxes();
 }
 
 function populateIssueBoxes() {
@@ -816,7 +797,7 @@ function readCSV(shouldSet = false) {
     }
     $.get(window.location.href + 'aws3', param, function(date) {
         let csvParam = {
-            file: param.prefix + getModelPrefix() + fitVotePrefix(date) + date + '_',
+            file: param.prefix + getModelPrefix() + date + '_',
             suffix: param.suffix
         };
         updateDayLabel(date);
@@ -864,7 +845,7 @@ function createGrid() {
 
     x *= xRatio;
     y *= yRatio;
-    let xOffset = width * ((leftToImage + 20) / (xWidth + 20));
+    let xOffset = width * (leftToImage / xWidth);
     let yOffset = height * (topToImage / yHeight);
 
     let grid = '';
@@ -973,13 +954,9 @@ function pad(n) {
     return (n < 10) ? ('0' + n) : n;
 }
 
-function fitVotePrefix(date) {
-    let dateArr = date.split('-');
-    if(modelType === 'Voting') {
-        return dateArr[0] + '' + dateArr[1] + '' + dateArr[2] + '_';
-    } else {
-        return '';
-    }
+function hideFeedbackSuccessText() {
+    let feedbackSuccess = document.getElementById('feedback-success-id');
+    feedbackSuccess.style.display = 'none';
 }
 
 function hideFeedbackSuccessText() {
@@ -1005,7 +982,7 @@ function retrieveImages() {
     img.src = 'resources/blankForecast.png';
     $.get(window.location.href + 'aws3', param, function(date) {
         let imgParam = {
-            file: param.prefix + getModelPrefix() + fitVotePrefix(date) + date + '_',
+            file: param.prefix + getModelPrefix() + date + '_',
             suffix: param.suffix
         };
         currentLabelDate = date;
@@ -1180,6 +1157,18 @@ function updateTheme(isChecked) {
     let dayChange = document.getElementById('change-day');
     let chartType = document.getElementById('button-chart-type-dropdown');
     let chartBackground = document.getElementById('time-series-chart-id-2');
+    let submitFeedback = document.getElementById('button-feedback-id');
+    let submitButton = document.getElementById('button-submit-id');
+    let feedbackSection = document.getElementById('feedback-section');
+    let feedbackInit = document.getElementById('feedback-init');
+    let feedbackThreshold = document.getElementById('feedback-threshold');
+    let feedbackModel = document.getElementById('feedback-model');
+    let feedbackRes = document.getElementById('feedback-res');
+    let feedbackDay = document.getElementById('feedback-day');
+    let additionalDetails = document.getElementById('additional-details-box');
+    let feedbackEmail = document.getElementById('feedback-email');
+
+
 
     if (isChecked) {
         // Set Dark Theme
@@ -1198,7 +1187,6 @@ function updateTheme(isChecked) {
         userManual.style.backgroundColor = '#0d6efd';
         modelButton.style.backgroundColor = '#0d6efd';
         dayChange.style.backgroundColor = '#292929';
-        dayChange.style.border = '5px solid black;';
         chartType.style.backgroundColor = '#0d6efd';
         buttonHighRes.style.backgroundColor = currentResolution === 'high' ? '#0d6efd' : '#212121';
         buttonHighRes.style.borderColor = '#0d6efd'
@@ -1210,6 +1198,27 @@ function updateTheme(isChecked) {
         previewCheckbox.style.backgroundColor = previewsEnabled ? previewCheckbox.style.backgroundColor = '#0d6efd' : previewCheckbox.style.backgroundColor = '#393939';
         mappedValues.style.backgroundColor = '#212121';
         chartBackground.style.backgroundColor = '#212121';
+        submitFeedback.style.backgroundColor = '#0d6efd';
+        submitFeedback.style.borderColor = '#0d6efd';
+        submitButton.style.backgroundColor = '#0d6efd';
+        submitButton.style.borderColor = '#0d6efd';
+        feedbackSection.style.backgroundColor = '#292929';
+        feedbackInit.style.backgroundColor = '#161616';
+        feedbackInit.style.color = 'white';
+        feedbackThreshold.style.backgroundColor = '#161616';
+        feedbackThreshold.style.color = 'white';
+        feedbackModel.style.backgroundColor = '#161616';
+        feedbackModel.style.color = 'white';
+        feedbackRes.style.backgroundColor = '#161616';
+        feedbackRes.style.color = 'white';
+        feedbackDay.style.backgroundColor = '#161616';
+        feedbackDay.style.color = 'white';
+        additionalDetails.style.backgroundColor = '#161616';
+        additionalDetails.style.color = 'white';
+        feedbackEmail.style.backgroundColor = '#161616';
+        feedbackEmail.style.color = 'white';
+    
+        
 
         dayButtons.forEach((dayButtons) => {
             dayButtons.style.borderColor = "#0a53be";
@@ -1217,6 +1226,13 @@ function updateTheme(isChecked) {
         });
         lightPreview.forEach((lightPreview) => {
             lightPreview.classList.remove('light-switch');
+        });
+        contactCheckbox.forEach((contactCheckbox) => {
+            contactCheckbox.classList.remove('form-check-input-light');
+        });
+
+        activePreviewButton.forEach((activePreviewButton) => {
+            activePreviewButton.classList.add('btn-outline-primary');
         });
 
     } else {
@@ -1242,7 +1258,6 @@ function updateTheme(isChecked) {
         mainHeader.style.backgroundColor = '#2d871933';
         mapSection.style.backgroundColor = '#efefef';
         dayChange.style.backgroundColor = '#fff';
-        dayChange.style.border = '0px solid black;';
         daySlider.style.accentColor = '#569630';
         thresholdSlider.style.accentColor = '#569630';
         pageBody.style.backgroundColor = '#2d871933';
@@ -1250,6 +1265,27 @@ function updateTheme(isChecked) {
         previewCheckbox.style.backgroundColor = previewsEnabled ? previewCheckbox.style.backgroundColor = '#77c743' : previewCheckbox.style.backgroundColor = '#393939';
         mappedValues.style.backgroundColor = '#fff';
         chartBackground.style.backgroundColor = '#ffffff';
+        submitFeedback.style.backgroundColor = '#77c743';
+        submitFeedback.style.borderColor = '#77c743';
+        submitButton.style.backgroundColor = '#77c743';
+        submitButton.style.borderColor = '#77c743';
+        feedbackSection.style.backgroundColor = '#fff';
+        feedbackInit.style.backgroundColor = '#fff';
+        feedbackInit.style.color = '#000';
+        feedbackThreshold.style.backgroundColor = '#fff';
+        feedbackThreshold.style.color = '#000';
+        feedbackModel.style.backgroundColor = '#fff';
+        feedbackModel.style.color = '#000';
+        feedbackRes.style.backgroundColor = '#fff';
+        feedbackRes.style.color = '#000';
+        feedbackDay.style.backgroundColor = '#fff';
+        feedbackDay.style.color = '#000';
+        additionalDetails.style.backgroundColor = '#fff';
+        additionalDetails.style.color = '#000';
+        feedbackEmail.style.backgroundColor = '#fff';
+        feedbackEmail.style.color = '#000';
+        
+
 
         dayButtons.forEach((dayButtons) => {
             dayButtons.style.borderColor = "#77c743";
@@ -1257,7 +1293,14 @@ function updateTheme(isChecked) {
         });
 
         lightPreview.forEach((lightPreview) => {
-            lightPreview.classList.add('light-switch');
+            lightPreview.classList.remove('light-switch');
+        });
+
+        contactCheckbox.forEach((contactCheckbox) => {
+            contactCheckbox.classList.add('form-check-input-light');
+        });
+        activePreviewButton.forEach((activePreviewButton) => {
+            activePreviewButton.classList.remove('btn-outline-primary');
         });
     }
 }
