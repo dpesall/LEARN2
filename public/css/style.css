@@ -7,6 +7,10 @@ body {
     background:#fff
 }
 
+.btn-primary {
+    box-shadow: 5px 5px 16px -3px #27111136;
+}
+
 .res-light {
     background-color: #77c743;
     border-color: #77c743;
