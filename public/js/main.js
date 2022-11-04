@@ -10,6 +10,7 @@ const resolution = document.querySelectorAll('.button-resolution');
 const contactCheckbox = document.querySelectorAll('.form-check-input-light');
 const activePreviewButton = document.querySelectorAll('.btn-outline-primary');
 
+
 const INITIALIZE_HISTORY_LIMIT = 5;
 const DAY_MS = 86400000;
 
@@ -90,6 +91,7 @@ Array.prototype.max = function() {
 Array.prototype.min = function() {
     return Math.min.apply(null, this);
 };
+
 
 function submitFeedback() {
     let initValue = document.getElementById('feedback-init').value;
@@ -178,20 +180,24 @@ function setChartLocation(location) {
 
     let leftChart = document.getElementById('time-series-id');
     let rightChart = document.getElementById('time-series-id-2');
+    let instruction = document.getElementById('instruction')
 
     chartLocation = location;
     switch(chartLocation) {
         case 'Left':
             leftChart.style.display = 'block';
             rightChart.style.display = 'none';
+            instruction.style.display = 'block';
             break;
         case 'Right':
             leftChart.style.display = 'none';
             rightChart.style.display = 'block';
+            instruction.style.display = 'none';
             break;
         case 'Both':
             leftChart.style.display = 'block';
             rightChart.style.display = 'block';
+            instruction.style.display = 'none';
             break;
     }
 }
@@ -366,19 +372,24 @@ function showTimeSeries(x, y, res) {
     let ctx2 = document.getElementById('time-series-chart-id-2');
     let leftChart = document.getElementById('time-series-id');
     let rightChart = document.getElementById('time-series-id-2');
+    let instruction = document.getElementById('instruction');
+
 
     switch(chartLocation) {
         case 'Left':
             leftChart.style.display = 'block';
             rightChart.style.display = 'none';
+            instruction.style.display = 'block';
             break;
         case 'Right':
             leftChart.style.display = 'none';
             rightChart.style.display = 'block';
+            instruction.style.display = 'none';
             break;
         case 'Both':
             leftChart.style.display = 'block';
             rightChart.style.display = 'block';
+            instruction.style.display = 'block';
             break;
     }
 
@@ -1151,6 +1162,7 @@ function updateTheme(isChecked) {
     let feedbackDay = document.getElementById('feedback-day');
     let additionalDetails = document.getElementById('additional-details-box');
     let feedbackEmail = document.getElementById('feedback-email');
+   
 
 
 
