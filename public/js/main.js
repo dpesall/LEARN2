@@ -92,38 +92,23 @@ Array.prototype.min = function() {
 };
 
 function submitFeedback() {
-    let feedbackType = document.getElementById('button-feedback-dropdown').innerText;
     let initValue = document.getElementById('feedback-init').value;
     let threshValue = document.getElementById('feedback-threshold').value;
     let modelValue = document.getElementById('feedback-model').value;
     let resValue = document.getElementById('feedback-res').value;
     let dayValue = document.getElementById('feedback-day').value;
     let requestForContact = document.getElementById('contact-checkbox').checked;
-    let requestForContactSuggestion = document.getElementById('contact-checkbox-suggestion').checked;
     let emailValue = document.getElementById('feedback-email').value;
-    let emailSuggestionValue = document.getElementById('suggestion-email').value;
 
     let submitSpinner = document.getElementById('submit-spinner-id');
     submitSpinner.style.display = 'inline-block';
 
-    let description = '';
-    if(feedbackType === 'Issue') {
-        description = document.getElementById('additional-details-box').value;
-    } else {
-        description = document.getElementById('feedback-box').value;
-    }
+    let description = document.getElementById('additional-details-box').value;
 
     let feedbackInfo = {};
-    if(feedbackType === 'Issue') {
-        feedbackInfo = `Type: ${feedbackType}\nInitialization Date: ${initValue}\nThreshold Value:${threshValue}\nModel: ${modelValue}\nResolution: ${resValue}\nForecast Day: ${dayValue}\nDescription: ${description}\nRequest For Contact: ${requestForContact}`;
-        if(requestForContact) {
-            feedbackInfo += '\nEmail: ' + emailValue;
-        }
-    } else {
-        feedbackInfo = `Type: ${feedbackType}\nSuggestion: ${description}\nRequest For Contact: ${requestForContactSuggestion}`;
-        if(requestForContactSuggestion) {
-            feedbackInfo += '\nEmail: ' + emailSuggestionValue;
-        }
+    feedbackInfo = `Initialization Date: ${initValue}\nThreshold Value:${threshValue}\nModel: ${modelValue}\nResolution: ${resValue}\nForecast Day: ${dayValue}\nDescription: ${description}\nRequest For Contact: ${requestForContact}`;
+    if(requestForContact) {
+        feedbackInfo += '\nEmail: ' + emailValue;
     }
     let param = {
         text: feedbackInfo
