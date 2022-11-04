@@ -52,34 +52,45 @@
                 </div>
               </div>
             </div>
-            <img onmouseover="showSavedTableData();" id="forecast-image" usemap="#forecast-map" src="resources/blankForecast.png" onerror="this.src='resources/noData.png'" class="img-fluid image-main-border" alt="image">
-            <canvas id="forecast-canvas" width="0" height="0"></canvas>
-            <span id="interactive-map-id">
-              <map id="forecast-map-id" name="forecast-map"></map>
-            </span>
-            <img id="threshold-image" src="resources/High_res_60th_percentile_threshold.png" class="img-fluid image-main-border" alt="image">
-            <canvas id="threshold-canvas" width="0" height="0"></canvas>
-
+            <div class="row">
+              <div class="col-7" style="padding: 0;">
+                <img onmouseover="showSavedTableData();" id="forecast-image" usemap="#forecast-map" src="resources/blankForecast.png" onerror="this.src='resources/noData.png'" class="img-fluid image-main-border" alt="image">
+                <canvas id="forecast-canvas" width="0" height="0"></canvas>
+                <span id="interactive-map-id">
+                  <map id="forecast-map-id" name="forecast-map"></map>
+                </span>
+              </div>
+              <div class="col-5" style="padding: 0;">
+                <img id="threshold-image" src="resources/High_res_60th_percentile_threshold.png" class="img-fluid image-main-border" alt="image">
+                <canvas id="threshold-canvas" width="0" height="0"></canvas>
+                <div style="padding-top: 10px;"></div>
+                <div class="container-fluid">
+                  <div class="row">
+                    <div class="col-sm">
+                      <table class="value-table" id="value-table" style="width: 100%;">
+                        <tr style="width: 70%;">
+                          <th>Likelihood of Exceedance</th>
+                          <th>Threshold Value</th>
+                          <th>Coordinates</th>
+                        </tr>
+                        <tr style="width: 30%;">
+                          <td id="exceedance-id">--</td>
+                          <td id="threshold-value-id">--</td>
+                          <td id="coordinate-id">( , )</td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div style="padding-top: 10px;"></div>
-            
+
             <div class="container-fluid">
               <div class="row">
                 <div class="col-2"></div>
                 <div class="col-sm-8">
-                  <div class="container-fluid">
-                    <table style="width:100%" class="value-table" id="value-table">
-                      <tr>
-                        <th>Likelihood of Exceedance</th>
-                        <th>Threshold Value</th>
-                        <th>Coordinates</th>
-                      </tr>
-                      <tr>
-                        <td id="exceedance-id">--</td>
-                        <td id="threshold-value-id">--</td>
-                        <td id="coordinate-id">( , )</td>
-                      </tr>
-                    </table>
-                  </div>
+
                 </div>
                 <div class="col-2"></div>
               </div>
@@ -455,7 +466,6 @@
           </div>
         </div>
       </div>
-
       <div class="extension footer" id="ext-id">
         <a href='https://innovim.com/' target="_blank"><img src="/resources/innovim_logo.png"></a>
       </div>
