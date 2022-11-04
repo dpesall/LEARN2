@@ -1257,7 +1257,7 @@ function updateTheme(isChecked) {
         mapSection.style.backgroundColor = '#efefef';
         daySlider.style.accentColor = '#569630';
         thresholdSlider.style.accentColor = '#569630';
-        pageBody.style.backgroundColor = '#2d871933';
+        pageBody.style.backgroundColor = '#bbd6b5';
         pageBody.style.color = 'black';
         previewCheckbox.style.backgroundColor = previewsEnabled ? previewCheckbox.style.backgroundColor = '#77c743' : previewCheckbox.style.backgroundColor = '#393939';
         // mappedValues.style.backgroundColor = '#fff';
