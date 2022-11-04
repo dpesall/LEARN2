@@ -3,6 +3,10 @@ body {
     z-index: 1;
 }
 
+.both-maps {
+    background:#fff
+}
+
 .res-light {
     background-color: #77c743;
     border-color: #77c743;
@@ -41,10 +45,6 @@ body {
     height: 250px;
     background-color: #161616;
     color: white;
-}
-
-.bs-btn-hover-bg-light{
-    
 }
 
  #button-high-res {
@@ -142,7 +142,7 @@ body {
 }
 
 .day-slider {
-    width: 70%;
+    width: 90%;
 }
 
 .day-slider-wrapper {
@@ -152,8 +152,8 @@ body {
 
 .day-slider-ticks {
     text-align: center;
-    padding-left: 13%;
-    padding-right: 13%;
+    padding-left: 4%;
+    padding-right: 4%;
     font-size: 12px;
 }
 
@@ -214,6 +214,12 @@ body {
     padding: 15px;
 }
 
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 2%;
+}
 .form-check-input:checked {
     background-color: #0d6efd;
 }
@@ -241,11 +247,11 @@ body {
 }
 
 #threshold-image { 
-    width: 40%;
+    width: 100%;
 }
 
 #forecast-image {
-    width: 58%;
+    width: 100%;
 }
 
 #forecast-canvas {
@@ -259,7 +265,7 @@ body {
 }
 
 .image-main-border {
-    border: 3px solid grey;
+
 }
 
 #init-up {
@@ -407,6 +413,11 @@ li{
     border-radius: 50%;
 }
 
+.slider-section {
+    text-align: right;
+    padding-top: 1%;
+}
+
 .theme-switch-label {
     position: relative;
     display: inline-block;
@@ -477,8 +488,18 @@ li{
     padding-top: 30px;
 }
 
-table, th, td {
-    border: 3px solid black;
+/* table, th, td {
+    border: 1px solid black;
+} */
+
+tr {
+    display: block;
+    float: left;
+}
+th, td {
+    display: block;
+    width: 100%;
+    border-bottom: solid 1px;
 }
 
 .theme-switch:checked + .slider .on {
@@ -556,7 +577,8 @@ table, th, td {
 
 .value-table {
     text-align: center;
-    font-size: 20px;
-    background-color: #212121;
+    font-size: 16px;
+    font-weight: normal;
+    color: #212121;
 }
 

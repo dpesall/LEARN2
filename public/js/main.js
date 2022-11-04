@@ -1153,8 +1153,7 @@ function updateTheme(isChecked) {
     let previewCheckbox = document.getElementById('preview-switch-background-id');
     let buttonHighRes = document.getElementById('button-high-res');
     let buttonLowRes = document.getElementById('button-low-res');
-    let mappedValues = document.getElementById('value-table');
-    let dayChange = document.getElementById('change-day');
+    // let mappedValues = document.getElementById('value-table');
     let chartType = document.getElementById('button-chart-type-dropdown');
     let chartBackground = document.getElementById('time-series-chart-id-2');
     let submitFeedback = document.getElementById('button-feedback-id');
@@ -1186,7 +1185,6 @@ function updateTheme(isChecked) {
         thresholdButton.style.backgroundColor = '#0d6efd';
         userManual.style.backgroundColor = '#0d6efd';
         modelButton.style.backgroundColor = '#0d6efd';
-        dayChange.style.backgroundColor = '#292929';
         chartType.style.backgroundColor = '#0d6efd';
         buttonHighRes.style.backgroundColor = currentResolution === 'high' ? '#0d6efd' : '#212121';
         buttonHighRes.style.borderColor = '#0d6efd'
@@ -1196,7 +1194,7 @@ function updateTheme(isChecked) {
         thresholdSlider.style.accentColor = '#0d6efd';
         modelButton.style.borderColor = '#0a53be';
         previewCheckbox.style.backgroundColor = previewsEnabled ? previewCheckbox.style.backgroundColor = '#0d6efd' : previewCheckbox.style.backgroundColor = '#393939';
-        mappedValues.style.backgroundColor = '#212121';
+        // mappedValues.style.backgroundColor = '#212121';
         chartBackground.style.backgroundColor = '#212121';
         submitFeedback.style.backgroundColor = '#0d6efd';
         submitFeedback.style.borderColor = '#0d6efd';
@@ -1257,13 +1255,12 @@ function updateTheme(isChecked) {
         userManual.style.borderColor = '#77c743';
         mainHeader.style.backgroundColor = '#2d871933';
         mapSection.style.backgroundColor = '#efefef';
-        dayChange.style.backgroundColor = '#fff';
         daySlider.style.accentColor = '#569630';
         thresholdSlider.style.accentColor = '#569630';
-        pageBody.style.backgroundColor = '#2d871933';
+        pageBody.style.backgroundColor = '#bbd6b5';
         pageBody.style.color = 'black';
         previewCheckbox.style.backgroundColor = previewsEnabled ? previewCheckbox.style.backgroundColor = '#77c743' : previewCheckbox.style.backgroundColor = '#393939';
-        mappedValues.style.backgroundColor = '#fff';
+        // mappedValues.style.backgroundColor = '#fff';
         chartBackground.style.backgroundColor = '#ffffff';
         submitFeedback.style.backgroundColor = '#77c743';
         submitFeedback.style.borderColor = '#77c743';
