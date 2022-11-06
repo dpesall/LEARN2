@@ -334,10 +334,26 @@ function getLegendLabel(index, x ,y) {
 }
 
 const forecastLabels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
-function showTimeSeries(x, y, res) {
+function showTimeSeries(x, y, res, fromClicked = false) {
     if(x == null || y == null || resetGrid === true) {
         return;
     }
+    if(savedX === x && savedY === y && fromClicked) {
+        savedX = -1;
+        savedY = -1;
+        cleanTimeSeries();
+        let canvasForecast = document.getElementById('forecast-canvas');
+        let canvasThreshold = document.getElementById('threshold-canvas');
+
+        let ctx = canvasForecast.getContext('2d');
+        let ctx2 = canvasThreshold.getContext('2d');
+
+        ctx.clearRect(0, 0, canvasForecast.width, canvasForecast.height);
+        ctx2.clearRect(0, 0, canvasThreshold.width, canvasThreshold.height);
+        return;
+    }
+    savedX = x;
+    savedY = y;
     chartSettingsCurrent = dark ? chartSettingsDark : chartSettingsLight;
     updateCanvas(x, y);
     chartLoadedOnce = true;
@@ -373,8 +389,6 @@ function showTimeSeries(x, y, res) {
             return;
         }
     } catch(e) {}
-    savedX = x;
-    savedY = y;
     let ctx = document.getElementById('time-series-chart-id');
     let ctx2 = document.getElementById('time-series-chart-id-2');
     let leftChart = document.getElementById('time-series-id');
@@ -572,13 +586,14 @@ function paintCanvas(x, y, ctx, canvas) {
     ctx.beginPath();
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#ffffff';
+    ctx.outline
     ctx.rect(x * xStep - 1, y * yStep - 1, xStep + 2, yStep + 2);
     ctx.stroke();
 
     ctx.beginPath();
     ctx.lineWidth = 1;
     ctx.strokeStyle = '#030303';
-    ctx.rect(x * xStep, y * yStep, xStep, yStep);
+    ctx.rect(x * xStep + 1, y * yStep + 1, xStep - 2, yStep - 2);
     ctx.stroke();
 
     ctx.beginPath();
@@ -867,7 +882,7 @@ function createGrid() {
             let x2 = xOffset + (x * j) + x;
             let y1 = yOffset + (y * i);
             let y2 = yOffset + (y * i) + y;
-            grid += `<area shape="rect" coords="${x1}, ${y1}, ${x2}, ${y2}" alt="grid" onclick="showTimeSeries(${j}, ${i}, currentResolution);" onmouseover="updateValueBox(${j}, ${i}, currentResolution);">\n`;
+            grid += `<area shape="rect" coords="${x1}, ${y1}, ${x2}, ${y2}" alt="grid" onclick="showTimeSeries(${j}, ${i}, currentResolution, true);" onmouseover="updateValueBox(${j}, ${i}, currentResolution);">\n`;
         }
     }
     mapSpan.innerHTML = '<map name="forecast-map">\n' +
