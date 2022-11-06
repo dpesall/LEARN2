@@ -572,13 +572,13 @@ function paintCanvas(x, y, ctx, canvas) {
     ctx.beginPath();
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#ffffff';
-    ctx.rect(x * xStep, y * yStep, xStep, yStep);
+    ctx.rect(x * xStep - 1, y * yStep - 1, xStep + 2, yStep + 2);
     ctx.stroke();
 
     ctx.beginPath();
     ctx.lineWidth = 1;
     ctx.strokeStyle = '#030303';
-    ctx.rect(x * xStep + 2, y * yStep + 2, xStep - 4, yStep - 4);
+    ctx.rect(x * xStep, y * yStep, xStep, yStep);
     ctx.stroke();
 
     ctx.beginPath();
