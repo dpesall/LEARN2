@@ -22,7 +22,7 @@ const yHeight = 4768;
 
 const xRatio = 2011 / xWidth;
 const yRatio = 3686 / yHeight;
-const xRatioThreshold = 1732 / 3463;
+const xRatioThreshold = 1644 / 3463;
 const yRatioThreshold = 3007 / 4092;
 
 const chartSettingsDark = {
@@ -157,7 +157,7 @@ function loadCanvas() {
     let xOffset = img.width * (leftToImage / xWidth);
     let yOffset = img.height * (topToImage / yHeight);
 
-    let xOffset2 = thresholdImage.width * (707 / 3463);
+    let xOffset2 = thresholdImage.width * (791 / 3463);
     let yOffset2 = thresholdImage.height * (topToImage / 4092);
 
     let useYRatio = yRatio;
@@ -165,13 +165,13 @@ function loadCanvas() {
 
     forecastCanvas.height = img.height * useYRatio;
     forecastCanvas.width = img.width * xRatio;
-    forecastCanvas.style.left = (img.offsetLeft + 3 + xOffset) + 'px';
-    forecastCanvas.style.top = (img.offsetTop + 3 + yOffset) + 'px';
+    forecastCanvas.style.left = (img.offsetLeft + xOffset) + 'px';
+    forecastCanvas.style.top = (img.offsetTop + yOffset) + 'px';
 
     thresholdCanvas.height = thresholdImage.height * useYRatioThreshold;
     thresholdCanvas.width = thresholdImage.width * xRatioThreshold;
-    thresholdCanvas.style.left = (thresholdImage.offsetLeft + 3 + xOffset2) + 'px';
-    thresholdCanvas.style.top = (thresholdImage.offsetTop + 3 + yOffset2) + 'px';
+    thresholdCanvas.style.left = (thresholdImage.offsetLeft + xOffset2) + 'px';
+    thresholdCanvas.style.top = (thresholdImage.offsetTop + yOffset2) + 'px';
 }
 
 function setChartLocation(location) {
@@ -345,12 +345,19 @@ function showTimeSeries(x, y, res) {
     let latitude = 0;
     let longitude = 0;
 
+    let latOffset = 0;
+    let lonOffset = 0;
+
     if(res === 'high') {
-        latitude = 49.5 - (y * 16.5 / 67) - ((16.5 / 67) / 2);
-        longitude = -124.5 + (x * 8 / 37) + ((8 / 37) / 2);
+        latOffset = 16.5 / 67;
+        lonOffset = 9 / 37;
+        latitude = 49.5 - (y * latOffset) - (latOffset / 2);
+        longitude = -124.5 + (x * lonOffset) + (lonOffset / 2);
     } else {
-        latitude = 49.5 - (y * 16.5 / 12) - .6875;
-        longitude = -124.5 + (x * 8 / 7) + ((8 / 7) / 2);
+        latOffset = 16.5 / 12;
+        lonOffset = 9 / 7;
+        latitude = 49.5 - (y * latOffset) - (latOffset / 2);
+        longitude = -124.5 + (x * lonOffset) + (lonOffset / 2);
     }
 
     savedTableData = [
@@ -606,12 +613,21 @@ function updateValueBox(x, y, res) {
         let latitude = 0;
         let longitude = 0;
 
+        let latOffset = 0;
+        let lonOffset = 0;
+
         if(res === 'high') {
-            latitude = 49.5 - (y * 16.5 / 67) - ((16.5 / 67) / 2);
-            longitude = -124.5 + (x * 8 / 37) + ((8 / 37) / 2);
+            latOffset = 16.5 / 67;
+            lonOffset = 9 / 37;
+
+            latitude = 49.5 - (y * latOffset) - (latOffset / 2);
+            longitude = -124.5 + (x * lonOffset) + (lonOffset / 2);
         } else {
-            latitude = 49.5 - (y * 16.5 / 12) - .6875;
-            longitude = -124.5 + (x * 8 / 7) + ((8 / 7) / 2);
+            latOffset = 16.5 / 12;
+            lonOffset = 9 / 7;
+
+            latitude = 49.5 - (y * latOffset) - (latOffset / 2);
+            longitude = -124.5 + (x * lonOffset) + (lonOffset / 2);
         }
 
         coordinates.innerHTML = `(${latitude.toFixed(2)}, ${longitude.toFixed(2)})`;
@@ -1641,6 +1657,10 @@ document.getElementById('threshold-slider-id').addEventListener('input', functio
 // Control Panel Lock
 document.getElementById('lock-image-id').addEventListener('click', function() {
     toggleControlPanelLock();
+});
+
+document.getElementById('forecast-image').addEventListener('mouseover', function() {
+    showSavedTableData();
 });
 
 // Initialize Buttons
