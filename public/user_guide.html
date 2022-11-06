@@ -19,8 +19,6 @@
     <meta name="theme-color" content="#fafafa">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.179.0.min.js"></script>
-
-
 </head>
 
 <body>
@@ -28,19 +26,14 @@
         <div class="user-guide-section">
             <div class="container-fluid main-header" id="main-header-id">
                 <div class="learn2-logo">
-                    <img src="resources/logo.png" class="img-fluid" style="width: 200px" alt="Responsive image">
+                    <img onclick="redirect('user_guide');" src="resources/logo.png" class="img-fluid showSingle" style="width: 200px" alt="Responsive image">
                     LEARN&sup2;
                 </div>
                 <h3 class="learn2">Landfalling Event Atmospheric River Neural Network</h3>
             </div>
         <a href="#" id="toTopBtn" class="cd-top text-replace js-cd-top cd-top--is-visible cd-top--fade-out" data-abc="true"></a>
-        
-       
-        
-           
             <div class="container-fluid user-guide-title">
                 User Guide
-            
             </div>
            
 <div class="container-fluid user-guide-control-panel">
@@ -567,21 +560,6 @@
         <div style="padding-bottom: 50%;"></div>
     </div>
     <script src="js/bootstrap.bundle.js"></script>
-    <script>
-       jQuery(document).ready(function(){
-    $(".targetDiv").hide();
-});
-
-
-jQuery(function(){
-  
-   
-   jQuery('.showSingle').click(function(){
-      jQuery('.targetDiv').hide('.cnt');
-      jQuery('#GI-'+$(this).attr('target')).slideToggle();
-
-   }); 
-});
-          </script>
+    <script src="js/generic.js"></script>
 </body>
 </html>
