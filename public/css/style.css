@@ -250,6 +250,10 @@ body {
     cursor: pointer;
 }
 
+.showSingle.content-links {
+    width: 85%;
+}
+
 #threshold-image { 
     width: 100%;
 }
