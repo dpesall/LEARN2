@@ -92,7 +92,6 @@ Array.prototype.min = function() {
     return Math.min.apply(null, this);
 };
 
-
 function submitFeedback() {
     let initValue = document.getElementById('feedback-init').value;
     let threshValue = document.getElementById('feedback-threshold').value;
@@ -1114,7 +1113,7 @@ function initializeTheme() {
     themeCheckbox.checked = isChecked === 'true';
     dark = isChecked === 'true';
     chartSettingsCurrent = dark ? chartSettingsDark : chartSettingsLight;
-    updateTheme(dark);
+    updateTheme(dark, true);
 }
 
 function getTopScrollPosition() {
@@ -1159,7 +1158,7 @@ function updatePreview(isChecked) {
     }
 }
 
-function updateTheme(isChecked) {
+function updateTheme(isChecked, isInitializing = false) {
     let controlPanel = document.getElementById('control-panel-id');
     let controlPanelSection = document.getElementById('control-panel-section-id');
     let mainHeader = document.getElementById('main-header-id');
@@ -1188,9 +1187,6 @@ function updateTheme(isChecked) {
     let feedbackDay = document.getElementById('feedback-day');
     let additionalDetails = document.getElementById('additional-details-box');
     let feedbackEmail = document.getElementById('feedback-email');
-   
-
-
 
     if (isChecked) {
         // Set Dark Theme
@@ -1238,8 +1234,6 @@ function updateTheme(isChecked) {
         additionalDetails.style.color = 'white';
         feedbackEmail.style.backgroundColor = '#161616';
         feedbackEmail.style.color = 'white';
-    
-        
 
         dayButtons.forEach((dayButtons) => {
             dayButtons.style.borderColor = "#0a53be";
@@ -1304,8 +1298,6 @@ function updateTheme(isChecked) {
         additionalDetails.style.color = '#000';
         feedbackEmail.style.backgroundColor = '#fff';
         feedbackEmail.style.color = '#000';
-        
-
 
         dayButtons.forEach((dayButtons) => {
             dayButtons.style.borderColor = "#77c743";
@@ -1322,6 +1314,9 @@ function updateTheme(isChecked) {
         activePreviewButton.forEach((activePreviewButton) => {
             activePreviewButton.classList.remove('btn-outline-primary');
         });
+    }
+    if(isInitializing) {
+        document.body.style.display = 'block';
     }
 }
 
