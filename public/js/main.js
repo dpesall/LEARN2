@@ -940,7 +940,7 @@ function getModelPrefix() {
 }
 
 function getPrefix() {
-    return currentResolution === 'high' ? '0.25_' : '0.5_'
+    return currentResolution === 'high' ? '0.25_' : '1.5_'
 }
 
 function test() {
@@ -993,7 +993,6 @@ function retrieveImages() {
     spinner.style.display = 'block';
 
     enableInteraction();
-
     let param = {
         prefix: getPrefix(),
         suffix: sigmaToPercentile(true),
