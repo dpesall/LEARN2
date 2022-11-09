@@ -13,6 +13,7 @@ const activePreviewButton = document.querySelectorAll('.btn-outline-primary');
 
 const INITIALIZE_HISTORY_LIMIT = 5;
 const DAY_MS = 86400000;
+const HOUR_MS = DAY_MS / 24;
 
 // ratios of inner-map to full forecast and threshold images image
 const topToImage = 162;
@@ -964,9 +965,9 @@ function updateDayLabel(date) {
     let realDateArray = realDate.split('-');
     let realDateObject = new Date(parseInt(realDateArray[0]), underflow((parseInt(realDateArray[1]) - 1), 11), parseInt(realDateArray[2]));
     let realDateObject2 = new Date(realDateObject);
-    realDateObject2.setTime(realDateObject2.getTime() - DAY_MS + (DAY_MS * forecastDayIndex));
+    realDateObject2.setTime(realDateObject2.getTime() + HOUR_MS - DAY_MS + (DAY_MS * forecastDayIndex));
     let realDateObject3 = new Date();
-    realDateObject3.setTime(realDateObject2.getTime() + DAY_MS);
+    realDateObject3.setTime(realDateObject2.getTime() + HOUR_MS + DAY_MS);
     let dateInitialize = document.getElementById('init');
     let forecastDateLabel = document.getElementById('main-forecast-date');
     let newDateArr1 = realDateObject2.toDateString().split(' ');
