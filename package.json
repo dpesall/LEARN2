@@ -1,7 +1,7 @@
 {
   "name": "learn2",
-  "version": "1.0.0",
-  "description": "Front-end for the LEARN2 real-time rainfall forecaster",
+  "version": "1.1.0",
+  "description": "Front-end for the LEARN2 real-time rainfall forecaster.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/dpesall/Learn2.git"
   },
-  "author": "",
+  "author": "Drew Pesall",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/dpesall/Learn2/issues"

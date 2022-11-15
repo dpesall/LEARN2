@@ -40,6 +40,8 @@ let chartSettingsCurrent = chartSettingsDark;
 let currentSigma = .5;
 let forecastDayIndex = 1;
 let currentInitialize = 5;
+let savedLatitude = -1;
+let savedLongitude = -1;
 
 let previewsEnabled = false;
 let isTodayStored = false;
@@ -51,6 +53,7 @@ let fullStop = true;
 let resetGrid = false;
 let canMoveDays = true;
 let hasSelectedCoordinate = false;
+let feedbackViewable = false;
 
 let timeSeriesCanvas = null;
 let timeSeriesCanvas2 = null;
@@ -99,6 +102,7 @@ function submitFeedback() {
     let modelValue = document.getElementById('feedback-model').value;
     let resValue = document.getElementById('feedback-res').value;
     let dayValue = document.getElementById('feedback-day').value;
+    let coordinateValue = document.getElementById('feedback-coordinates').value;
     let requestForContact = document.getElementById('contact-checkbox').checked;
     let emailValue = document.getElementById('feedback-email').value;
 
@@ -108,7 +112,7 @@ function submitFeedback() {
     let description = document.getElementById('additional-details-box').value;
 
     let feedbackInfo = {};
-    feedbackInfo = `Initialization Date: ${initValue}\nThreshold Value:${threshValue}\nModel: ${modelValue}\nResolution: ${resValue}\nForecast Day: ${dayValue}\nDescription: ${description}\nRequest For Contact: ${requestForContact}`;
+    feedbackInfo = `Initialization Date: ${initValue}\nThreshold Value:${threshValue}\nModel: ${modelValue}\nResolution: ${resValue}\nForecast Day: ${dayValue}\nCoordinates: ${coordinateValue}\nDescription: ${description}\nRequest For Contact: ${requestForContact}`;
     if(requestForContact) {
         feedbackInfo += '\nEmail: ' + emailValue;
     }
@@ -127,6 +131,7 @@ function submitFeedback() {
 }
 
 function toggleFeedback() {
+    feedbackViewable = !feedbackViewable;
     let feedbackSection = document.getElementById('feedback-section');
     feedbackSection.style.display = feedbackSection.style.display === 'block' ? 'none' : 'block';
     populateIssueBoxes();
@@ -138,12 +143,14 @@ function populateIssueBoxes() {
     let modelBox = document.getElementById('feedback-model');
     let resBox = document.getElementById('feedback-res');
     let dayBox = document.getElementById('feedback-day');
+    let coordinateBox = document.getElementById('feedback-coordinates');
 
     initBox.value = currentLabelDate;
     threshBox.value = sigmaToPercentile(false);
     modelBox.value = modelType;
     resBox.value = currentResolution === 'high' ? 'High' : 'Low';
     dayBox.value = forecastDayIndex;
+    coordinateBox.value = savedLongitude === -1 ? 'None Selected' : `(${savedLatitude.toFixed(2)}, ${savedLongitude.toFixed(2)})`
 }
 
 
@@ -338,6 +345,7 @@ function showTimeSeries(x, y, res, fromClicked = false) {
     if(x == null || y == null || resetGrid === true) {
         return;
     }
+
     if(savedX === x && savedY === y && fromClicked) {
         savedX = -1;
         savedY = -1;
@@ -376,6 +384,12 @@ function showTimeSeries(x, y, res, fromClicked = false) {
         longitude = -124.5 + (x * lonOffset) + (lonOffset / 2);
     }
 
+    savedLongitude = longitude;
+    savedLatitude = latitude;
+
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
     savedTableData = [
         mapArray[y][x] < 0 ? '--' : (100 * mapArray[y][x]).toFixed(0) + '%',
         csvCache[(currentSigma * 2) + resolutionOffset()][y][x] < 0 ? '--' : csvCache[(currentSigma * 2) + resolutionOffset()][y][x] + ' in',
@@ -1337,6 +1351,9 @@ function quickUpdateFromCache(cache) {
 }
 
 function updateModel(type) {
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
     switch(modelType) {
         case 'Voting':
             temp = tempVote;
@@ -1424,6 +1441,9 @@ function updateImages() {
 }
 
 function updateDay(delta, modifyForecast, shouldUpdateImages = true) {
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
     let dateInitialize = document.getElementById('init');
     let forecast = document.getElementById('forecast-day');
     let currentDateArr = dateInitialize.textContent.split(' ');
@@ -1451,6 +1471,9 @@ function updateDay(delta, modifyForecast, shouldUpdateImages = true) {
 }
 
 function updateMean(newSigma) {
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
     let threshold = document.getElementById('threshold');
     let meanLabel = document.getElementById('mean-label');
     if(newSigma <= 2 && newSigma >= 0) {
@@ -1474,6 +1497,9 @@ function updateThresholdSlider() {
 }
 
 function updateDate(increment) {
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
     let currentDateId = document.getElementById('init');
     let forecastDateLabel = document.getElementById('main-forecast-date');
     let currentDateArr = currentDateId.textContent.split(' ');
@@ -1526,6 +1552,9 @@ function emptyCaches() {
 }
 
 function updateResolution(quality) {
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
     let buttonHighRes = document.getElementById('button-high-res');
     let buttonLowRes = document.getElementById('button-low-res');
     resetGrid = true;
