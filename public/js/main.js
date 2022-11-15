@@ -233,7 +233,7 @@ function getChartArrays(x, y) {
                 }
             }
         }
-        for(let i = 0; i < 5; i++) {
+        for(let i = 0; i < 6; i++) {
             tempArray.push(
                 [
                     (allCSVArray[(10 * i)][y][x] * 100).toFixed(0),
@@ -245,9 +245,7 @@ function getChartArrays(x, y) {
                     (allCSVArray[(10 * i) + 6][y][x] * 100).toFixed(0),
                     (allCSVArray[(10 * i) + 7][y][x] * 100).toFixed(0),
                     (allCSVArray[(10 * i) + 8][y][x] * 100).toFixed(0),
-                    (allCSVArray[(10 * i) + 9][y][x] * 100).toFixed(0),
-                    (allCSVArray[(10 * i) + 10][y][x] * 100).toFixed(0),
-                    (allCSVArray[(10 * i) + 11][y][x] * 100).toFixed(0)
+                    (allCSVArray[(10 * i) + 9][y][x] * 100).toFixed(0)
                 ]
             );
         }
