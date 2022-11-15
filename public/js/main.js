@@ -1535,19 +1535,9 @@ function updateThresholdImage() {
     let thresholdImage = document.getElementById('threshold-image');
     let newThresholdURL = rootDirectory;
     if(currentResolution === 'high') {
-        // TODO: Delete this if statement once the 95th map/csv gets added
-        if(currentSigma === 2.5) {
-            newThresholdURL += highResPrefix + '90th' + percentileThreshold + extension;
-        } else {
-            newThresholdURL += highResPrefix + sigmaToPercentile(true) + percentileThreshold + extension;
-        }
+        newThresholdURL += highResPrefix + sigmaToPercentile(true) + percentileThreshold + extension;
     } else {
-        // TODO: Delete this if statement once the 95th map/csv gets added
-        if(currentSigma === 2.5) {
-            newThresholdURL += lowResPrefix + '90th' + percentileThreshold + extension;
-        } else {
-            newThresholdURL += lowResPrefix + sigmaToPercentile(true) + percentileThreshold + extension;
-        }
+        newThresholdURL += lowResPrefix + sigmaToPercentile(true) + percentileThreshold + extension;
     }
     thresholdImage.src = newThresholdURL;
 }
