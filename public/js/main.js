@@ -14,6 +14,7 @@ const activePreviewButton = document.querySelectorAll('.btn-outline-primary');
 const INITIALIZE_HISTORY_LIMIT = 5;
 const DAY_MS = 86400000;
 const HOUR_MS = DAY_MS / 24;
+const BUFFER_SIZE = 60;
 
 // ratios of inner-map to full forecast and threshold images image
 const topToImage = 162;
@@ -1025,7 +1026,7 @@ function retrieveImages() {
         initializeDates(date);
         $.get(window.location.href + 'aws', imgParam, function(data) {
             forecastImageCache = [];
-            for(let i = 0; i < 50; i++) {
+            for(let i = 0; i < BUFFER_SIZE; i++) {
                 forecastImageCache[i] = data[i];
             }
             if(spinner == null) {
@@ -1476,9 +1477,9 @@ function updateMean(newSigma) {
     }
     let threshold = document.getElementById('threshold');
     let meanLabel = document.getElementById('mean-label');
-    if(newSigma <= 2 && newSigma >= 0) {
+    if(newSigma <= 2.5 && newSigma >= 0) {
         currentSigma = parseFloat(newSigma);
-        let thresholdValue = 50 + (currentSigma * 20);
+        let thresholdValue = currentSigma === 2.5 ? 95 : 50 + (currentSigma * 20);
         threshold.textContent = `${thresholdValue}`;
         meanLabel.textContent = `PRISM Threshold Percentile: ${thresholdValue}`;
 
@@ -1516,20 +1517,37 @@ function updateDate(increment) {
 
 function sigmaToPercentile(suffix) {
     if(suffix) {
-        return 50 + (currentSigma * 20) + 'th';
+        if(currentSigma === 2.5) {
+            return '95th';
+        } else {
+            return 50 + (currentSigma * 20) + 'th';
+        }
     } else {
-        return 50 + (currentSigma * 20);
+        if(currentSigma === 2.5) {
+            return '95';
+        } else {
+            return 50 + (currentSigma * 20);
+        }
     }
 }
 
 function updateThresholdImage() {
     let thresholdImage = document.getElementById('threshold-image');
     let newThresholdURL = rootDirectory;
-
     if(currentResolution === 'high') {
-        newThresholdURL += highResPrefix + sigmaToPercentile(true) + percentileThreshold + extension;
+        // TODO: Delete this if statement once the 95th map/csv gets added
+        if(currentSigma === 2.5) {
+            newThresholdURL += highResPrefix + '90th' + percentileThreshold + extension;
+        } else {
+            newThresholdURL += highResPrefix + sigmaToPercentile(true) + percentileThreshold + extension;
+        }
     } else {
-        newThresholdURL += lowResPrefix + sigmaToPercentile(true) + percentileThreshold + extension;
+        // TODO: Delete this if statement once the 95th map/csv gets added
+        if(currentSigma === 2.5) {
+            newThresholdURL += lowResPrefix + '90th' + percentileThreshold + extension;
+        } else {
+            newThresholdURL += lowResPrefix + sigmaToPercentile(true) + percentileThreshold + extension;
+        }
     }
     thresholdImage.src = newThresholdURL;
 }

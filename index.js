@@ -7,6 +7,8 @@ const https = require('https');
 const AWS = require('aws-sdk');
 const nodemailer = require('nodemailer');
 
+const BUFFER_SIZE = 60;
+
 app.use(express.static('public/'));
 
 AWS.config.update({
@@ -42,9 +44,9 @@ async function makePromiseSet(fileNames, functionName, start) {
     ];
 }
 
-let imageURLS = Array(50);
+let imageURLS = Array(BUFFER_SIZE);
 function gatherURL(fileNames, _callback) {
-    for(let i = 0; i < 50; i++) {
+    for(let i = 0; i < BUFFER_SIZE; i++) {
         imageURLS[i] = s3.getSignedUrl('getObject', {
             Bucket: bucket,
             Key: fileNames[i],
@@ -56,7 +58,7 @@ function gatherURL(fileNames, _callback) {
 
 function gatherCSV(csvNames, _callback) {
     let csvStreams = [];
-    for(let i = 0; i < 50; i++) {
+    for(let i = 0; i < BUFFER_SIZE; i++) {
         let fileData = [];
         csvStreams[i] = s3.getObject({Bucket: bucket, Key: csvNames[i]}).createReadStream().on('error', err => {
             // console.log('error');
@@ -68,7 +70,7 @@ function gatherCSV(csvNames, _callback) {
                 fileData.push(data);
             }).on('end', count => {
                 csvData[i] = fileData;
-                if(i === 49) {
+                if(i === (BUFFER_SIZE - 1)) {
                     _callback();
                 }
         });
@@ -78,7 +80,7 @@ function gatherCSV(csvNames, _callback) {
 app.get('/aws2', async (req, res) => {
     let fileBase = req.query.file;
     let csvNames = [];
-    for(let j = 0; j < 5; j++) {
+    for(let j = 0; j < 6; j++) {
         let percentile = '';
         switch(j) {
             case 0:
@@ -96,6 +98,8 @@ app.get('/aws2', async (req, res) => {
             case 4:
                 percentile = '_90th.csv';
                 break;
+            case 5:
+                percentile = '_95th.csv'
         }
         for(let i = 1; i <= 10; i++) {
             csvNames.push(fileBase + i + percentile);
@@ -199,7 +203,7 @@ app.get('/aws', async (req, res) => {
     let rootName = req.query.file;
     let fileNames = [];
 
-    for(let j = 0; j < 5; j++) {
+    for(let j = 0; j < 6; j++) {
         let percentile = '';
         switch(j) {
             case 0:
@@ -216,6 +220,9 @@ app.get('/aws', async (req, res) => {
                 break;
             case 4:
                 percentile = '_90th.png';
+                break;
+            case 5:
+                percentile = '_95th.png';
                 break;
         }
         for(let i = 1; i <= 10; i++) {
