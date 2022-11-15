@@ -81,7 +81,7 @@ let mapArray = [];
 let allCSVArray = [];
 let clickedCoordinates = [];
 let savedTableData = ['--', '--', '( , )'];
-let csvCache = Array(10);
+let csvCache = Array(12);
 
 // On-Load Functionality
 window.onload = function() {
@@ -227,7 +227,7 @@ function getChartArrays(x, y) {
     let tempArray = [];
     try {
         for(let i = 0; i < 10; i++) {
-            for(let j = 4; j > 0; j--) {
+            for(let j = 5; j > 0; j--) {
                 if(allCSVArray[(10 * j) + i][y][x] > allCSVArray[(10 * (j - 1) + i)][y][x]) {
                     allCSVArray[(10 * (j - 1) + i)][y][x] = allCSVArray[(10 * j) + i][y][x];
                 }
@@ -245,7 +245,9 @@ function getChartArrays(x, y) {
                     (allCSVArray[(10 * i) + 6][y][x] * 100).toFixed(0),
                     (allCSVArray[(10 * i) + 7][y][x] * 100).toFixed(0),
                     (allCSVArray[(10 * i) + 8][y][x] * 100).toFixed(0),
-                    (allCSVArray[(10 * i) + 9][y][x] * 100).toFixed(0)
+                    (allCSVArray[(10 * i) + 9][y][x] * 100).toFixed(0),
+                    (allCSVArray[(10 * i) + 10][y][x] * 100).toFixed(0),
+                    (allCSVArray[(10 * i) + 11][y][x] * 100).toFixed(0)
                 ]
             );
         }
@@ -337,6 +339,9 @@ function getFill(index) {
 function getLegendLabel(index, x ,y) {
     let label = csvCache[index + resolutionOffset()][y][x];
     let percentile = 50 + (index * 10);
+    if(index === 5) {
+        percentile = 95;
+    }
     label += ' (' + percentile + 'th percentile)';
     return label;
 }
@@ -346,7 +351,6 @@ function showTimeSeries(x, y, res, fromClicked = false) {
     if(x == null || y == null || resetGrid === true) {
         return;
     }
-
     if(savedX === x && savedY === y && fromClicked) {
         savedX = -1;
         savedY = -1;
@@ -410,7 +414,6 @@ function showTimeSeries(x, y, res, fromClicked = false) {
     let rightChart = document.getElementById('time-series-id-2');
     let instruction = document.getElementById('instruction');
 
-
     switch(chartLocation) {
         case 'Left':
             leftChart.style.display = 'block';
@@ -471,6 +474,14 @@ function showTimeSeries(x, y, res, fromClicked = false) {
                 borderWidth: 1.5,
                 data: chartArrays[4],
                 fill: getFill(4)
+            },
+            {
+                label: getLegendLabel(5, x, y), // '95th Percentile',
+                backgroundColor: 'rgb(238,0,255)',
+                borderColor: 'rgb(238,0,255)',
+                borderWidth: 1.5,
+                data: chartArrays[5],
+                fill: getFill(5)
             },
         ],
     };
@@ -668,7 +679,7 @@ function updateValueBox(x, y, res) {
 }
 
 function resolutionOffset() {
-    return currentResolution === 'high' ? 5 : 0;
+    return currentResolution === 'high' ? 6 : 0;
 }
 
 function loadAllCSVFiles(_callback) {
@@ -691,12 +702,14 @@ function loadAllCSVFiles(_callback) {
     loadCSVFile('resources/Low_res_70th_percentile_threshold.csv', 2);
     loadCSVFile('resources/Low_res_80th_percentile_threshold.csv', 3);
     loadCSVFile('resources/Low_res_90th_percentile_threshold.csv', 4);
+    loadCSVFile('resources/Low_res_95th_percentile_threshold.csv', 5);
 
-    loadCSVFile('resources/High_res_50th_percentile_threshold.csv', 5);
-    loadCSVFile('resources/High_res_60th_percentile_threshold.csv', 6);
-    loadCSVFile('resources/High_res_70th_percentile_threshold.csv', 7);
-    loadCSVFile('resources/High_res_80th_percentile_threshold.csv', 8);
-    loadCSVFile('resources/High_res_90th_percentile_threshold.csv', 9);
+    loadCSVFile('resources/High_res_50th_percentile_threshold.csv', 6);
+    loadCSVFile('resources/High_res_60th_percentile_threshold.csv', 7);
+    loadCSVFile('resources/High_res_70th_percentile_threshold.csv', 8);
+    loadCSVFile('resources/High_res_80th_percentile_threshold.csv', 9);
+    loadCSVFile('resources/High_res_90th_percentile_threshold.csv', 10);
+    loadCSVFile('resources/High_res_95th_percentile_threshold.csv', 11);
 }
 
 function loadCSVFile(fileName, index) {
@@ -744,6 +757,12 @@ function cleanTimeSeries() {
                 label: '90th Percentile',
                 backgroundColor: 'rgb(255,0,0)',
                 borderColor: 'rgb(255,0,0)',
+                borderWidth: 1.5,
+            },
+            {
+                label: '95th Percentile',
+                backgroundColor: 'rgb(238,0,255)',
+                borderColor: 'rgb(238,0,255)',
                 borderWidth: 1.5,
             },
         ],
