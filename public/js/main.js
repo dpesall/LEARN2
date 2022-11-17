@@ -1018,7 +1018,7 @@ function hideFeedbackSuccessText() {
     feedbackSuccess.style.display = 'none';
 }
 
-function retrieveImages() {
+function retrieveImages(_callback = () => {}) {
     hideFeedbackSuccessText();
     let spinner = document.getElementById('loading-spinner-id');
     let img = document.getElementById('forecast-image');
@@ -1075,6 +1075,7 @@ function retrieveImages() {
             canMoveDays = true;
             toggleInitButtons();
             spinner.style.display = 'none';
+            _callback();
         });
     });
 }
@@ -1529,7 +1530,9 @@ function updateDate(increment) {
     }
     let newDateArr = currentDate.toDateString().split(' ');
     forecastDateLabel.textContent = `${newDateArr[1]} ${newDateArr[2]}, ${newDateArr[3]}`;
-    retrieveImages();
+    retrieveImages(function() {
+        updateImages();
+    });
 }
 
 function sigmaToPercentile(suffix) {
