@@ -528,7 +528,7 @@ th, td {
  }
 
 .threshold-slider {
-    width: 70%;
+    width: 90%;
 }
 
 #time-series-chart-id, #time-series-chart-id-2 {
@@ -539,8 +539,8 @@ th, td {
 
 .threshold-slider-ticks {
     text-align: center;
-    padding-left: 10%;
-    padding-right: 10%;
+    /* padding-left: 10%;
+    padding-right: 10%; */
     font-size: 12px;
 }
 

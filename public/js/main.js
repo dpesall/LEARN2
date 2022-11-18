@@ -1220,6 +1220,7 @@ function updateTheme(isChecked, isInitializing = false) {
     let feedbackDay = document.getElementById('feedback-day');
     let additionalDetails = document.getElementById('additional-details-box');
     let feedbackEmail = document.getElementById('feedback-email');
+    let feedbackCoordinates = document.getElementById('feedback-coordinates');
 
     if (isChecked) {
         // Set Dark Theme
@@ -1267,7 +1268,8 @@ function updateTheme(isChecked, isInitializing = false) {
         additionalDetails.style.color = 'white';
         feedbackEmail.style.backgroundColor = '#161616';
         feedbackEmail.style.color = 'white';
-
+        feedbackCoordinates.style.backgroundColor = '#161616';
+        feedbackCoordinates.style.color = 'white';
         dayButtons.forEach((dayButtons) => {
             dayButtons.style.borderColor = "#0a53be";
             dayButtons.classList.remove('light-hover');
@@ -1331,6 +1333,8 @@ function updateTheme(isChecked, isInitializing = false) {
         additionalDetails.style.color = '#000';
         feedbackEmail.style.backgroundColor = '#fff';
         feedbackEmail.style.color = '#000';
+        feedbackCoordinates.style.backgroundColor = '#fff';
+        feedbackCoordinates.style.color = '#000';
 
         dayButtons.forEach((dayButtons) => {
             dayButtons.style.borderColor = "#77c743";
