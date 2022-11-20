@@ -1221,6 +1221,7 @@ function updateTheme(isChecked, isInitializing = false) {
     let additionalDetails = document.getElementById('additional-details-box');
     let feedbackEmail = document.getElementById('feedback-email');
     let feedbackCoordinates = document.getElementById('feedback-coordinates');
+    let chartTip = document.getElementById('tooltiptext');
 
     if (isChecked) {
         // Set Dark Theme
@@ -1270,6 +1271,7 @@ function updateTheme(isChecked, isInitializing = false) {
         feedbackEmail.style.color = 'white';
         feedbackCoordinates.style.backgroundColor = '#161616';
         feedbackCoordinates.style.color = 'white';
+        chartTip.style.backgroundColor = '#0c6efda3'
         dayButtons.forEach((dayButtons) => {
             dayButtons.style.borderColor = "#0a53be";
             dayButtons.classList.remove('light-hover');
@@ -1335,6 +1337,7 @@ function updateTheme(isChecked, isInitializing = false) {
         feedbackEmail.style.color = '#000';
         feedbackCoordinates.style.backgroundColor = '#fff';
         feedbackCoordinates.style.color = '#000';
+        chartTip.style.backgroundColor = '#4b9929b3'
 
         dayButtons.forEach((dayButtons) => {
             dayButtons.style.borderColor = "#77c743";
@@ -1778,9 +1781,11 @@ $( window ).on( "load", function() {
 
 
 
+const closeTip = document.getElementById('tooltip-close');
 
-
-
+closeTip.addEventListener('click', function handleClick(event) {
+  closeTip.parentElement.remove();
+});
 
 
 

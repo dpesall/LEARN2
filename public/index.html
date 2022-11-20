@@ -255,7 +255,16 @@
             </div>
           </div>
           <div id="instruction">Once loaded, click a point on the <em>Likelihood of Threshold Exceedance</em> map to display time series chart.</div>
-          <span id="time-series-id-2" class="chart" style="display: none;">
+          <span id="time-series-id-2" class="chart tool-tip"  style="display: none;">
+          <span id="tooltiptext">
+            <div id='tooltip-close' class= 'btn tooltip-btn'>X</div>
+            Click on any of the colored blocks above time series chart to hide a dataset. For example, 
+            to display only the 90th percentile (red block) click all other blocks to hide.
+          
+       
+      </span>
+           
+            
             <canvas id="time-series-chart-id-2"></canvas>
           </span>
           <div style="padding-top: 10px"></div>
