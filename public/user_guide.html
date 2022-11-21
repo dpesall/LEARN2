@@ -101,9 +101,7 @@
             CPUs, 196 GB RAM, 50Gb/s network bandwidth, and 4 NVIDIA Tesla T4 GPUs. LEARN&sup2 is evaluated against the Parameter
             elevation Regression on Independent Slopes Model (PRISM) gridded precipitation ground truth dataset. This project's
             results are, in fact, highly promising in delivering additional value in this most critical window. Not surprisingly,
-            the development work has been particularly challenging and has required creative and exhaustive
-            <br>
-            exploration of the associated forecast space including a variety of input models, AI/ML tools, and model configurations.
+            the development work has been particularly challenging and has required creative and exhaustive exploration of the associated forecast space including a variety of input models, AI/ML tools, and model configurations.
             Using F1-score as our primary metric, LEARN&sup2’s overall network produces predictions that significantly outperform both
             the GEFS and ECMWF, delivering between one and two additional days of lead time for skillful extreme rainfall prediction
             when validated on fully independent data (see the below figures). Notably, adding the Pacific/North American (PNA),
@@ -162,7 +160,7 @@
           <div class="showSingle content-links" target="1"><em>i. </em>Extreme precipitation forecast panel</div>
           <div class="showSingle content-links" target="2"><em>ii. </em>Daily Rainfall threshold panel</div>
      
-          <div class="showSingle content-links" target="3"><em>iii. </em>Comment button</div>
+          <div class="showSingle content-links" target="3"><em>iii. </em>User Feedback button</div>
           
          
           <div class="showSingle content-links" target="4"><em>iv. </em>Time series panel</div>
@@ -238,7 +236,7 @@
                 </div>
                 <p>Once the user selects a point on the Extreme Precipitation Forecast Panel, 
                     this panel displays all six (6) time series of percentile threshold exceedance 
-                    likelihoods (50%ile, 60%ile, 70%ile, 80%ile, 90%ile, and 95%ile) for all ten (10) forecast
+                    likelihoods (50th percenile, 60th percenile, 70th percenile, 80th percenile, 90th percenile, and 95th percenile) for all ten (10) forecast
                      days. For the grid element that was selected on the Extreme Precipitation Forecast Panel, 
                      the colors of each time series relate to the cumulative precipitation threshold values (inches) 
                      which are enumerated immediately above. Note that a mouse click to a particular forecast day within 
@@ -354,9 +352,9 @@
             classification problem. That is, given a particular set of inputs, we aim to discover to which of the possible classes
             does this input belong (if any). For this problem, each class is “anomalous rainfall at a specified latitude, longitude
             pair.” The ground truth is created by examining each point of interest (a regular grid of points in Washington, Oregon,
-            and California) and determining the average (50th percentile), 60th%ile, 70th%ile, 80th%ile, and 90th%ile of the 24-hour 
+            and California) and determining the average (50th percentile), 60th percenile, 70th percenile, 80th percenile, 90th percenile, and 95th percentile of the 24-hour 
             rainfall (removing all 0 rain days) at that point. A positive case is defined as exceeding a specified percentile. LEARN&sup2 
-            has been trained using values from 50th to 90th percentile.. The output of neural network for a given point will fall 
+            has been trained using values from 50th to 95th percentile.. The output of neural network for a given point will fall 
             between 0 and 1. Numbers closer to 1 indicate a prediction of the positive class (i.e., the network predicts rainfall amounts will
             cross the mean+ σ threshold at that point).</p>
 <br>
@@ -526,7 +524,9 @@
             
         </div>
         </div>
-        <div style="padding-bottom: 50%;"></div>
+        <div class="extension footer" id="ext-id">
+            <a href='https://innovim.com/' target="_blank"><img src="resources/innovim_logo.png"></a>
+        </div>
     </div>
     <script src="js/bootstrap.bundle.js"></script>
     <script src="js/generic.js"></script>
