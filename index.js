@@ -182,7 +182,7 @@ app.get('/feedback', async (req, res) => {
 
     let mailOptions = {
         from: 'learn2.feedback@outlook.com',
-        to: 'pesallandrew@gmail.com',
+        to: 'pesallandrew@gmail.com, brad.r.colman@gmail.com',
         subject: 'LEARN2 Feedback Submission',
         text: emailText
     };
