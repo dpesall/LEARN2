@@ -1363,7 +1363,7 @@ function updateTheme(isChecked, isInitializing = false) {
 function setDay(day) {
     let forecast = document.getElementById('forecast-day');
     forecast.textContent = day;
-    updateDay(0, false);
+    updateDay(0, false, false);
 }
 
 function toggleDaySelection(isChecked) {
