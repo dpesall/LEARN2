@@ -81,7 +81,7 @@ let mapArray = [];
 let allCSVArray = [];
 let clickedCoordinates = [];
 let savedTableData = ['--', '--', '( , )'];
-let csvCache = Array(12);
+let csvCache = Array(14);
 
 // On-Load Functionality
 window.onload = function() {
@@ -233,7 +233,7 @@ function getChartArrays(x, y) {
                 }
             }
         }
-        for(let i = 0; i < 6; i++) {
+        for(let i = 0; i < 7; i++) {
             tempArray.push(
                 [
                     (allCSVArray[(10 * i)][y][x] * 100).toFixed(0),
@@ -339,6 +339,8 @@ function getLegendLabel(index, x ,y) {
     let percentile = 50 + (index * 10);
     if(index === 5) {
         percentile = 95;
+    } else if(index === 6) {
+        percentile = 99;
     }
     label += ' (' + percentile + 'th percentile)';
     return label;
@@ -435,52 +437,60 @@ function showTimeSeries(x, y, res, fromClicked = false) {
         labels: forecastLabels,
         datasets: [{
             label: getLegendLabel(0, x, y), // '50th Percentile',
-            backgroundColor: 'rgb(0,197,255)',
-            borderColor: 'rgb(0,196,255)',
+            backgroundColor: 'rgb(0,64,255)',
+            borderColor: 'rgb(0,64,255)',
             borderWidth: 1.5,
             data: chartArrays[0],
             fill: getFill(0)
         },
             {
                 label: getLegendLabel(1, x, y), // '60th Percentile',
-                backgroundColor: 'rgb(0,255,64)',
-                borderColor: 'rgb(0,255,64)',
+                backgroundColor: 'rgb(0,196,255)',
+                borderColor: 'rgb(0,196,255)',
                 borderWidth: 1.5,
                 data: chartArrays[1],
                 fill: getFill(1)
             },
             {
                 label: getLegendLabel(2, x, y), // '70th Percentile',
-                backgroundColor: 'rgb(186,255,0)',
-                borderColor: 'rgb(186,255,0)',
+                backgroundColor: 'rgb(0,255,64)',
+                borderColor: 'rgb(0,255,64)',
                 borderWidth: 1.5,
                 data: chartArrays[2],
                 fill: getFill(2)
             },
             {
                 label: getLegendLabel(3, x, y), // '80th Percentile',
-                backgroundColor: 'rgb(255,111,0)',
-                borderColor: 'rgb(255,111,0)',
+                backgroundColor: 'rgb(186,255,0)',
+                borderColor: 'rgb(186,255,0)',
                 borderWidth: 1.5,
                 data: chartArrays[3],
                 fill: getFill(3)
             },
             {
                 label: getLegendLabel(4, x, y), // '90th Percentile',
-                backgroundColor: 'rgb(255,0,0)',
-                borderColor: 'rgb(255,0,0)',
+                backgroundColor: 'rgb(255,111,0)',
+                borderColor: 'rgb(255,111,0)',
                 borderWidth: 1.5,
                 data: chartArrays[4],
                 fill: getFill(4)
             },
             {
                 label: getLegendLabel(5, x, y), // '95th Percentile',
-                backgroundColor: 'rgb(238,0,255)',
-                borderColor: 'rgb(238,0,255)',
+                backgroundColor: 'rgb(255,0,0)',
+                borderColor: 'rgb(255,0,0)',
                 borderWidth: 1.5,
                 data: chartArrays[5],
                 fill: getFill(5)
             },
+            {
+                label: getLegendLabel(6, x, y), // '99th Percentile',
+                backgroundColor: 'rgb(238,0,255)',
+                borderColor: 'rgb(238,0,255)',
+                borderWidth: 1.5,
+                data: chartArrays[6],
+                fill: getFill(6)
+            }
         ],
     };
 
@@ -677,7 +687,7 @@ function updateValueBox(x, y, res) {
 }
 
 function resolutionOffset() {
-    return currentResolution === 'high' ? 6 : 0;
+    return currentResolution === 'high' ? 7 : 0;
 }
 
 function loadAllCSVFiles(_callback) {
@@ -701,13 +711,15 @@ function loadAllCSVFiles(_callback) {
     loadCSVFile('resources/Low_res_80th_percentile_threshold.csv', 3);
     loadCSVFile('resources/Low_res_90th_percentile_threshold.csv', 4);
     loadCSVFile('resources/Low_res_95th_percentile_threshold.csv', 5);
+    loadCSVFile('resources/Low_res_99th_percentile_threshold.csv', 6);
 
-    loadCSVFile('resources/High_res_50th_percentile_threshold.csv', 6);
-    loadCSVFile('resources/High_res_60th_percentile_threshold.csv', 7);
-    loadCSVFile('resources/High_res_70th_percentile_threshold.csv', 8);
-    loadCSVFile('resources/High_res_80th_percentile_threshold.csv', 9);
-    loadCSVFile('resources/High_res_90th_percentile_threshold.csv', 10);
-    loadCSVFile('resources/High_res_95th_percentile_threshold.csv', 11);
+    loadCSVFile('resources/High_res_50th_percentile_threshold.csv', 7);
+    loadCSVFile('resources/High_res_60th_percentile_threshold.csv', 8);
+    loadCSVFile('resources/High_res_70th_percentile_threshold.csv', 9);
+    loadCSVFile('resources/High_res_80th_percentile_threshold.csv', 10);
+    loadCSVFile('resources/High_res_90th_percentile_threshold.csv', 11);
+    loadCSVFile('resources/High_res_95th_percentile_threshold.csv', 12);
+    loadCSVFile('resources/High_res_99th_percentile_threshold.csv', 13);
 }
 
 function loadCSVFile(fileName, index) {

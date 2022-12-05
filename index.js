@@ -100,8 +100,10 @@ app.get('/aws2', async (req, res) => {
                 break;
             case 5:
                 percentile = '_95th.csv';
+                break;
             case 6:
                 percentile = '_99th.csv'
+                break;
         }
         for(let i = 1; i <= 10; i++) {
             csvNames.push(fileBase + i + percentile);
