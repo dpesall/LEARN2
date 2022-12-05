@@ -14,7 +14,7 @@ const activePreviewButton = document.querySelectorAll('.btn-outline-primary');
 const INITIALIZE_HISTORY_LIMIT = 5;
 const DAY_MS = 86400000;
 const HOUR_MS = DAY_MS / 24;
-const BUFFER_SIZE = 60;
+const BUFFER_SIZE = 70;
 
 // ratios of inner-map to full forecast and threshold images image
 const topToImage = 162;
@@ -1496,15 +1496,26 @@ function updateDay(delta, modifyForecast, shouldUpdateImages = true) {
     }
 }
 
+function convertSigma(sigma) {
+    switch(sigma) {
+        case 2.5:
+            return 95;
+        case 3:
+            return 99;
+        default:
+            return 50 + (currentSigma * 20);
+    }
+}
+
 function updateMean(newSigma) {
     if(feedbackViewable) {
         populateIssueBoxes();
     }
     let threshold = document.getElementById('threshold');
     let meanLabel = document.getElementById('mean-label');
-    if(newSigma <= 2.5 && newSigma >= 0) {
+    if(newSigma <= 3 && newSigma >= 0) {
         currentSigma = parseFloat(newSigma);
-        let thresholdValue = currentSigma === 2.5 ? 95 : 50 + (currentSigma * 20);
+        let thresholdValue = convertSigma(currentSigma);
         threshold.textContent = `${thresholdValue}`;
         meanLabel.textContent = `PRISM Threshold Percentile: ${thresholdValue}`;
 
@@ -1544,17 +1555,9 @@ function updateDate(increment) {
 
 function sigmaToPercentile(suffix) {
     if(suffix) {
-        if(currentSigma === 2.5) {
-            return '95th';
-        } else {
-            return 50 + (currentSigma * 20) + 'th';
-        }
+        return convertSigma(currentSigma) + 'th';
     } else {
-        if(currentSigma === 2.5) {
-            return '95';
-        } else {
-            return 50 + (currentSigma * 20);
-        }
+        return convertSigma(currentSigma);
     }
 }
 

@@ -7,7 +7,7 @@ const https = require('https');
 const AWS = require('aws-sdk');
 const nodemailer = require('nodemailer');
 
-const BUFFER_SIZE = 60;
+const BUFFER_SIZE = 70;
 
 app.use(express.static('public/'));
 
@@ -80,7 +80,7 @@ function gatherCSV(csvNames, _callback) {
 app.get('/aws2', async (req, res) => {
     let fileBase = req.query.file;
     let csvNames = [];
-    for(let j = 0; j < 6; j++) {
+    for(let j = 0; j < 7; j++) {
         let percentile = '';
         switch(j) {
             case 0:
@@ -99,7 +99,9 @@ app.get('/aws2', async (req, res) => {
                 percentile = '_90th.csv';
                 break;
             case 5:
-                percentile = '_95th.csv'
+                percentile = '_95th.csv';
+            case 6:
+                percentile = '_99th.csv'
         }
         for(let i = 1; i <= 10; i++) {
             csvNames.push(fileBase + i + percentile);
@@ -203,7 +205,7 @@ app.get('/aws', async (req, res) => {
     let rootName = req.query.file;
     let fileNames = [];
 
-    for(let j = 0; j < 6; j++) {
+    for(let j = 0; j < 7; j++) {
         let percentile = '';
         switch(j) {
             case 0:
@@ -223,6 +225,9 @@ app.get('/aws', async (req, res) => {
                 break;
             case 5:
                 percentile = '_95th.png';
+                break;
+            case 6:
+                percentile = '_99th.png';
                 break;
         }
         for(let i = 1; i <= 10; i++) {
