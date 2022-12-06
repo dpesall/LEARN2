@@ -270,7 +270,7 @@
                      recent NWP model 00Z initiatlization as well as four (4) previous 00Z initializations to examine
                       how the forecasts are changing with time and more-or-less-recent information and their stability;
                        (2) Threshold ̶ this widget enables the use to select which 24-hour cumulative precipitation 
-                       percentile threshold exceedance likelihoods (50%ile, 60%ile, 70%ile. 80%ile, and 90%ile) to 
+                       percentile threshold exceedance likelihoods (50th percentile, 60th percentile, 70th percentile. 80th percentile, 90th percentile, 95th percentile and 99th percentile) to 
                        consider; (3) Model ̶ while the primary output of the LEARN&sup2 tool is the Voting model, this 
                        widget permits the user to consider each of the four input models: the Convolutional model, 
                        the Dense Network model, the operational ECMWF medium-range forecast model, and the operational
@@ -302,8 +302,8 @@
                 </div>
                 <p>When hovering over the Extreme Precipitation Forecast Panel, a mouse click will select a grid
                      square of interest. The time series of predicted exceedance likelihoods for that grid element will
-                      display in the Time Series Panel for all ten (10) forecast days and all six (6) available 
-                      percentiles (50%ile to 95%ile).</p>
+                      display in the Time Series Panel for all ten (10) forecast days and all seven (7) available 
+                      percentiles (50 Percentile to 99 Percentile).</p>
             </div>
       </section>
             <br>
@@ -352,9 +352,9 @@
             classification problem. That is, given a particular set of inputs, we aim to discover to which of the possible classes
             does this input belong (if any). For this problem, each class is “anomalous rainfall at a specified latitude, longitude
             pair.” The ground truth is created by examining each point of interest (a regular grid of points in Washington, Oregon,
-            and California) and determining the average (50th percentile), 60th percenile, 70th percenile, 80th percenile, 90th percenile, and 95th percentile of the 24-hour 
+            and California) and determining the average 50th percentile, 60th percenile, 70th percenile, 80th percenile, 90th percenile, 95th percentile, and 99th percentile of the 24-hour 
             rainfall (removing all 0 rain days) at that point. A positive case is defined as exceeding a specified percentile. LEARN&sup2 
-            has been trained using values from 50th to 95th percentile.. The output of neural network for a given point will fall 
+            has been trained using values from 50th to 99th percentile.. The output of neural network for a given point will fall 
             between 0 and 1. Numbers closer to 1 indicate a prediction of the positive class (i.e., the network predicts rainfall amounts will
             cross the mean+ σ threshold at that point).</p>
 <br>
