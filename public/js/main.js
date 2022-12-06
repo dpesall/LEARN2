@@ -346,6 +346,8 @@ function getLegendLabel(index, x ,y) {
     return label;
 }
 
+
+let hiddenLabels = [0, 0, 0, 0, 0, 0, 0];
 const forecastLabels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
 function showTimeSeries(x, y, res, fromClicked = false) {
     if(x == null || y == null || resetGrid === true) {
@@ -432,17 +434,31 @@ function showTimeSeries(x, y, res, fromClicked = false) {
             break;
     }
 
+    const newLegendClickHandler = function (e, legendItem, legend) {
+        const index = legendItem.datasetIndex;
+        const ci = legend.chart;
+        if (ci.isDatasetVisible(index)) {
+            ci.hide(index);
+            legendItem.hidden = true;
+            hiddenLabels[index] = 1;
+        } else {
+            ci.show(index);
+            legendItem.hidden = false;
+            hiddenLabels[index] = 0;
+        }
+    };
+
     let chartArrays = getChartArrays(x, y);
     const chartData = {
         labels: forecastLabels,
         datasets: [{
-            label: getLegendLabel(0, x, y), // '50th Percentile',
-            backgroundColor: 'rgb(0,64,255)',
-            borderColor: 'rgb(0,64,255)',
-            borderWidth: 1.5,
-            data: chartArrays[0],
-            fill: getFill(0)
-        },
+                label: getLegendLabel(0, x, y), // '50th Percentile',
+                backgroundColor: 'rgb(0,64,255)',
+                borderColor: 'rgb(0,64,255)',
+                borderWidth: 1.5,
+                data: chartArrays[0],
+                fill: getFill(0)
+            },
             {
                 label: getLegendLabel(1, x, y), // '60th Percentile',
                 backgroundColor: 'rgb(0,196,255)',
@@ -524,8 +540,9 @@ function showTimeSeries(x, y, res, fromClicked = false) {
                         font: {
                             size: 14
                         },
-                        color: chartSettingsCurrent.fontColor
-                    }
+                        color: chartSettingsCurrent.fontColor,
+                    },
+                    onClick: newLegendClickHandler
                 },
                 tooltip: {
                     titleFont: {
@@ -595,13 +612,12 @@ function showTimeSeries(x, y, res, fromClicked = false) {
         ctx2,
         chartConfig
     );
-
     timeSeriesCanvas.config.options.onClick = timeSeriesCanvas2.config.options.onClick = (e) => {
         const canvasPosition = Chart.helpers.getRelativePosition(e, timeSeriesCanvas);
 
         const dataX = timeSeriesCanvas2.scales.x.getValueForPixel(canvasPosition.x);
         const dataY = timeSeriesCanvas2.scales.y.getValueForPixel(canvasPosition.y);
-        setDay(dataX + 1);
+        setDay(dataX + 1, false);
     }
 }
 
@@ -1372,10 +1388,10 @@ function updateTheme(isChecked, isInitializing = false) {
     }
 }
 
-function setDay(day) {
+function setDay(day, shouldUpdate = true) {
     let forecast = document.getElementById('forecast-day');
     forecast.textContent = day;
-    updateDay(0, false, false);
+    updateDay(0, false, shouldUpdate);
 }
 
 function toggleDaySelection(isChecked) {
