@@ -617,7 +617,7 @@ function showTimeSeries(x, y, res, fromClicked = false) {
 
         const dataX = timeSeriesCanvas2.scales.x.getValueForPixel(canvasPosition.x);
         const dataY = timeSeriesCanvas2.scales.y.getValueForPixel(canvasPosition.y);
-        setDay(dataX + 1, false);
+        setDay(dataX + 1);
     }
 }
 
