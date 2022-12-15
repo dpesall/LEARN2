@@ -499,14 +499,14 @@ function showTimeSeries(x, y, res, fromClicked = false) {
                 data: chartArrays[5],
                 fill: getFill(5)
             },
-            {
-                label: getLegendLabel(6, x, y), // '99th Percentile',
-                backgroundColor: 'rgb(238,0,255)',
-                borderColor: 'rgb(238,0,255)',
-                borderWidth: 1.5,
-                data: chartArrays[6],
-                fill: getFill(6)
-            }
+            // {
+            //     label: getLegendLabel(6, x, y), // '99th Percentile',
+            //     backgroundColor: 'rgb(238,0,255)',
+            //     borderColor: 'rgb(238,0,255)',
+            //     borderWidth: 1.5,
+            //     data: chartArrays[6],
+            //     fill: getFill(6)
+            // }
         ],
     };
 
@@ -1541,7 +1541,7 @@ function updateMean(newSigma) {
     }
     let threshold = document.getElementById('threshold');
     let meanLabel = document.getElementById('mean-label');
-    if(newSigma <= 3 && newSigma >= 0) {
+    if(newSigma <= 2.5 && newSigma >= 0) {
         currentSigma = parseFloat(newSigma);
         let thresholdValue = convertSigma(currentSigma);
         threshold.textContent = `${thresholdValue}`;
