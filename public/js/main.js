@@ -1005,7 +1005,8 @@ function getPrefix() {
 }
 
 function test() {
-
+    let img = document.getElementById('forecast-image');
+    img.src = 'resources/test_0.25_Vote_9--_categories_99th.png';
 }
 
 function correctModelType() {
