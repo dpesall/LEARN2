@@ -107,8 +107,6 @@
             </div>
             <div style="padding-top: 10px;"></div>
             <div class="btn btn-primary button-feedback" id="button-feedback-id">Submit Feedback</div>
-            <br><br>
-            <div class="btn btn-primary button-feedback" id="button-test-id" onclick="test();">Test</div>
             <div class="padding-main"></div>
             <div class="container-fluid" id="feedback-section">
               <div class="row" id="issue-section">
@@ -310,8 +308,7 @@
                   <div class="container-fluid">
                     <div class="row">
                       <div class="threshold-slider-wrapper centered-text">
-                        <!-- <input class="threshold-slider" type="range" id="threshold-slider-id" name="volume" min="0" max="3" step=".5" value=".5"> -->
-                        <input class="threshold-slider" type="range" id="threshold-slider-id" name="volume" min="0" max="2.5" step=".5" value=".5">
+                        <input class="threshold-slider" type="range" id="threshold-slider-id" name="volume" min="0" max="3" step=".5" value=".5">
                       </div>
                     </div>
                     <div class="threshold-slider-ticks">
@@ -322,7 +319,7 @@
                         <div class="col-sm">80</div>
                         <div class="col-sm">90</div>
                         <div class="col-sm">95</div>
-                        <!-- <div class="col-sm">99</div> -->
+                        <div class="col-sm">99</div>
                       </div>
                     </div>
                   </div>
@@ -338,7 +335,7 @@
                       <button class="btn btn-primary dropdown-toggle" id="button-model-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Voting
                       </button>
-                      <ul class="dropdown-menu">
+                      <ul id="dropdown-options-id" class="dropdown-menu">
                         <li><a class="dropdown-item" id="option-voting">Voting</a></li>
                         <li><a class="dropdown-item" id="option-convolutional">Convolutional</a></li>
                         <li><a class="dropdown-item" id="option-dense">Dense</a></li>

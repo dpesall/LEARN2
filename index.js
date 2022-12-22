@@ -121,7 +121,6 @@ function s3ListObjects(params, _callback) {
             console.log("listS3Objects Error:", err);
         } else {
             let contents = data.Contents;
-            console.log(contents[1].Key);
             s3DataContents = s3DataContents.concat(contents);
             if (data.IsTruncated) {
                 params.Marker = contents[contents.length / 4].Key;
@@ -206,7 +205,6 @@ app.get('/feedback', async (req, res) => {
 app.get('/aws', async (req, res) => {
     let rootName = req.query.file;
     let fileNames = [];
-
     for(let j = 0; j < 7; j++) {
         let percentile = '';
         switch(j) {
@@ -232,8 +230,16 @@ app.get('/aws', async (req, res) => {
                 percentile = '_99th.png';
                 break;
         }
-        for(let i = 1; i <= 10; i++) {
-            fileNames.push(rootName + i + percentile);
+        if(j === 6) {
+            for(let i = 1; i <= 10; i++) {
+                let newNameArr = rootName.split('_');
+                let newName = `${newNameArr[0]}_${newNameArr[1]}_${i}--_categories_99th.png`;
+                fileNames.push(newName);
+            }
+        } else {
+            for(let i = 1; i <= 10; i++) {
+                fileNames.push(rootName + i + percentile);
+            }
         }
     }
     gatherURL(fileNames, function() {
