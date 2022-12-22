@@ -27,6 +27,13 @@ const yRatio = 3686 / yHeight;
 const xRatioThreshold = 1644 / 3463;
 const yRatioThreshold = 3007 / 4092;
 
+const _xWidth = 4221;
+const _yHeight = 4690;
+const _leftToImage = 808;
+const _topToImage = 158;
+const _xRatio = 1970 / _xWidth;
+const _yRatio = 3614 / _yHeight;
+
 const chartSettingsDark = {
     fontColor: 'white',
     backgroundColor: '#212121'
@@ -154,32 +161,50 @@ function populateIssueBoxes() {
     coordinateBox.value = savedLongitude === -1 ? 'None Selected' : `(${savedLatitude.toFixed(2)}, ${savedLongitude.toFixed(2)})`
 }
 
-
-function loadCanvas() {
+function loadModifiedCanvas() {
     let forecastCanvas = document.getElementById('forecast-canvas');
     let img = document.getElementById('forecast-image');
 
-    let thresholdCanvas = document.getElementById('threshold-canvas');
-    let thresholdImage = document.getElementById('threshold-image');
+    let _xOffset = img.width * (_leftToImage / _xWidth);
+    let _yOffset = img.height * (_topToImage / _yHeight);
 
-    let xOffset = img.width * (leftToImage / xWidth);
-    let yOffset = img.height * (topToImage / yHeight);
+    forecastCanvas.height = img.height * _yRatio;
+    forecastCanvas.width = img.width * _xRatio;
+    forecastCanvas.style.left = (img.offsetLeft + _xOffset) + 'px';
+    forecastCanvas.style.top = (img.offsetTop + _yOffset) + 'px';
+}
 
-    let xOffset2 = thresholdImage.width * (791 / 3463);
-    let yOffset2 = thresholdImage.height * (topToImage / 4092);
+function loadCanvas() {
+    setTimeout(() => {
+        let forecastCanvas = document.getElementById('forecast-canvas');
+        let img = document.getElementById('forecast-image');
 
-    let useYRatio = yRatio;
-    let useYRatioThreshold = yRatioThreshold;
+        let thresholdCanvas = document.getElementById('threshold-canvas');
+        let thresholdImage = document.getElementById('threshold-image');
 
-    forecastCanvas.height = img.height * useYRatio;
-    forecastCanvas.width = img.width * xRatio;
-    forecastCanvas.style.left = (img.offsetLeft + xOffset) + 'px';
-    forecastCanvas.style.top = (img.offsetTop + yOffset) + 'px';
+        if(currentSigma === 3) {
+            loadModifiedCanvas();
+            return;
+        }
 
-    thresholdCanvas.height = thresholdImage.height * useYRatioThreshold;
-    thresholdCanvas.width = thresholdImage.width * xRatioThreshold;
-    thresholdCanvas.style.left = (thresholdImage.offsetLeft + xOffset2) + 'px';
-    thresholdCanvas.style.top = (thresholdImage.offsetTop + yOffset2) + 'px';
+        let xOffset = img.width * (leftToImage / xWidth);
+        let yOffset = img.height * (topToImage / yHeight);
+
+        let xOffset2 = thresholdImage.width * (791 / 3463);
+        let yOffset2 = thresholdImage.height * (topToImage / 4092);
+
+        let useYRatioThreshold = yRatioThreshold;
+
+        forecastCanvas.height = img.height * yRatio;
+        forecastCanvas.width = img.width * xRatio;
+        forecastCanvas.style.left = (img.offsetLeft + xOffset) + 'px';
+        forecastCanvas.style.top = (img.offsetTop + yOffset) + 'px';
+
+        thresholdCanvas.height = thresholdImage.height * useYRatioThreshold;
+        thresholdCanvas.width = thresholdImage.width * xRatioThreshold;
+        thresholdCanvas.style.left = (thresholdImage.offsetLeft + xOffset2) + 'px';
+        thresholdCanvas.style.top = (thresholdImage.offsetTop + yOffset2) + 'px';
+    }, 250);
 }
 
 function setChartLocation(location) {
@@ -499,14 +524,14 @@ function showTimeSeries(x, y, res, fromClicked = false) {
                 data: chartArrays[5],
                 fill: getFill(5)
             },
-            {
-                label: getLegendLabel(6, x, y), // '99th Percentile',
-                backgroundColor: 'rgb(238,0,255)',
-                borderColor: 'rgb(238,0,255)',
-                borderWidth: 1.5,
-                data: chartArrays[6],
-                fill: getFill(6)
-            }
+            // {
+            //     label: getLegendLabel(6, x, y), // '99th Percentile',
+            //     backgroundColor: 'rgb(238,0,255)',
+            //     borderColor: 'rgb(238,0,255)',
+            //     borderWidth: 1.5,
+            //     data: chartArrays[6],
+            //     fill: getFill(6)
+            // }
         ],
     };
 
@@ -930,10 +955,20 @@ function createGrid() {
         ySteps = 12;
     }
 
-    x *= xRatio;
-    y *= yRatio;
-    let xOffset = width * (leftToImage / xWidth);
-    let yOffset = height * (topToImage / yHeight);
+    let xOffset = 0;
+    let yOffset = 0;
+
+    if(currentSigma === 3) {
+        x *= _xRatio;
+        y *= _yRatio;
+        xOffset = width * (_leftToImage / _xWidth);
+        yOffset = height * (_topToImage / _yHeight);
+    } else {
+        x *= xRatio;
+        y *= yRatio;
+        xOffset = width * (leftToImage / xWidth);
+        yOffset = height * (topToImage / yHeight);
+    }
 
     let grid = '';
     for(let i = 0; i < ySteps; i++) {
@@ -1005,7 +1040,8 @@ function getPrefix() {
 }
 
 function test() {
-
+    let img = document.getElementById('forecast-image');
+    img.src = 'resources/test_0.25_Vote_9--_categories_99th.png';
 }
 
 function correctModelType() {
@@ -1060,7 +1096,7 @@ function retrieveImages(_callback = () => {}) {
         model: getModelPrefix(),
         offset: getDateOffset()
     }
-    img.src = 'resources/blankForecast.png';
+    img.src = currentSigma === 3 ? 'resources/blankForecast2.png' : 'resources/blankForecast.png';
     $.get(window.location.href + 'aws3', param, function(date) {
         let imgParam = {
             file: param.prefix + getModelPrefix() + date + '_',
@@ -1125,10 +1161,17 @@ function toggleInitButtons() {
 }
 
 function setPreviewImages(cache) {
+    loadCanvas();
     if(cache.length > 0) {
         for(let i = 1; i <= 10; i++) {
             let img = document.getElementById('preview-image-' + i);
             threadPreviewImage(cache, img, i - 1 + (10 * currentSigma * 2));
+            if(i === 10) {
+                let modelButton = document.getElementById('button-model-dropdown');
+                setTimeout(() => {
+                    modelButton.classList.remove('disabled');
+                }, 500);
+            }
         }
     }
 }
@@ -1426,7 +1469,12 @@ function updateModel(type) {
             break;
     }
     modelType = type;
+
     let modelButton = document.getElementById('button-model-dropdown');
+    let options = document.getElementById('dropdown-options-id');
+    setTimeout(() => {
+        modelButton.classList.add('disabled');
+    }, 0);
     modelButton.textContent = type;
     if(timeSeriesCanvas != null) {
         timeSeriesCanvas.destroy();
@@ -1492,6 +1540,7 @@ function updateImages() {
             }
             break;
     }
+    enableInteraction();
 }
 
 function updateDay(delta, modifyForecast, shouldUpdateImages = true) {
