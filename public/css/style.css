@@ -269,8 +269,6 @@ body {
 #forecast-canvas {
     position: absolute;
     pointer-events:none;
-    background-color: black;
-    opacity: 0.5;
 }
 
 .gui-img{
@@ -527,8 +525,6 @@ th, td {
 #threshold-canvas {
     position: absolute;
     pointer-events:none;
-    background-color: black;
-    opacity: 0.5;
  }
 
 .threshold-slider {
