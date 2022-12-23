@@ -62,6 +62,7 @@ let resetGrid = false;
 let canMoveDays = true;
 let hasSelectedCoordinate = false;
 let feedbackViewable = false;
+let modifiedScale = false;
 
 let timeSeriesCanvas = null;
 let timeSeriesCanvas2 = null;
@@ -182,7 +183,7 @@ function loadCanvas() {
         let thresholdCanvas = document.getElementById('threshold-canvas');
         let thresholdImage = document.getElementById('threshold-image');
 
-        if(currentSigma === 3) {
+        if(currentSigma === 3 && modifiedScale) {
             loadModifiedCanvas();
             return;
         }
@@ -252,7 +253,7 @@ function getChartArrays(x, y) {
     let tempArray = [];
     try {
         for(let i = 0; i < 10; i++) {
-            for(let j = 5; j > 0; j--) {
+            for(let j = 6; j > 0; j--) {
                 if(allCSVArray[(10 * j) + i][y][x] > allCSVArray[(10 * (j - 1) + i)][y][x]) {
                     allCSVArray[(10 * (j - 1) + i)][y][x] = allCSVArray[(10 * j) + i][y][x];
                 }
@@ -524,14 +525,14 @@ function showTimeSeries(x, y, res, fromClicked = false) {
                 data: chartArrays[5],
                 fill: getFill(5)
             },
-            // {
-            //     label: getLegendLabel(6, x, y), // '99th Percentile',
-            //     backgroundColor: 'rgb(238,0,255)',
-            //     borderColor: 'rgb(238,0,255)',
-            //     borderWidth: 1.5,
-            //     data: chartArrays[6],
-            //     fill: getFill(6)
-            // }
+            {
+                label: getLegendLabel(6, x, y), // '99th Percentile',
+                backgroundColor: 'rgb(238,0,255)',
+                borderColor: 'rgb(238,0,255)',
+                borderWidth: 1.5,
+                data: chartArrays[6],
+                fill: getFill(6)
+            }
         ],
     };
 
@@ -958,7 +959,7 @@ function createGrid() {
     let xOffset = 0;
     let yOffset = 0;
 
-    if(currentSigma === 3) {
+    if(currentSigma === 3 && modifiedScale) {
         x *= _xRatio;
         y *= _yRatio;
         xOffset = width * (_leftToImage / _xWidth);
@@ -1096,7 +1097,7 @@ function retrieveImages(_callback = () => {}) {
         model: getModelPrefix(),
         offset: getDateOffset()
     }
-    img.src = currentSigma === 3 ? 'resources/blankForecast2.png' : 'resources/blankForecast.png';
+    img.src = (currentSigma === 3 && modifiedScale) ? 'resources/blankForecast2.png' : 'resources/blankForecast.png';
     $.get(window.location.href + 'aws3', param, function(date) {
         let imgParam = {
             file: param.prefix + getModelPrefix() + date + '_',

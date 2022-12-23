@@ -202,6 +202,7 @@ app.get('/feedback', async (req, res) => {
     });
 });
 
+let modifiedScale = false;
 app.get('/aws', async (req, res) => {
     let rootName = req.query.file;
     let fileNames = [];
@@ -230,7 +231,7 @@ app.get('/aws', async (req, res) => {
                 percentile = '_99th.png';
                 break;
         }
-        if(j === 6) {
+        if(j === 6 && modifiedScale) {
             for(let i = 1; i <= 10; i++) {
                 let newNameArr = rootName.split('_');
                 let newName = `${newNameArr[0]}_${newNameArr[1]}_${i}--_categories_99th.png`;
