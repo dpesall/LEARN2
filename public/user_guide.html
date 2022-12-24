@@ -58,8 +58,9 @@
                         <li><a class='content-links' href='#scope'>Scope</a></li>
                         <li><a class='content-links' href='#functional-guide'>Learn&sup2 Functional Guide</a></li>
                         <li><a class='content-links' href='#troubleshooting'>Troubleshooting</a></li>
+                        <li><a class='content-links' href='#versions'>Versions</a></li>
                         <li><a class='content-links' href='#faq'>FAQ</a></li>
-                        
+
                         
                     </ol>
                     <br>
@@ -306,6 +307,42 @@
                       percentiles (50 Percentile to 99 Percentile).</p>
             </div>
       </section>
+            <br>
+            <br>
+            <h2 id="versions">Versions</h2>
+            <hr>
+            <p>
+                Version 1.0: Version 1.0 was our operational model through 22 December 2022. It included six
+                threshold exceedance levels: the 50 th , 60 th , 70 th , 80 th , 90 th and 95 th percentiles. Because operational
+                meteorologists’ and hydrologists’ interest focused on the most extreme events, this version is now being
+                replaced by Version 2.1, which now adds an additional 99 th percentile category.
+                Version 2.0 (internal only): This internal version implemented an additional extreme rainfall exceedance
+                category (99 th percentile), and was used for development and testing. A limitation of this version is that
+                events of this intensity are rare (by definition), and, as a result, the training dataset is significantly
+                unbalanced—with far fewer days and grid points exceeding the 99 th percentile than those below it.
+                While some skill is evident (see 27 March 2005 example below as compared to the PRISM verification),
+                this imbalance causes the neural networks to be overly conservative in most cases.
+            </p>
+            <img class="img-fluid" src="resources/versioning_images_1.png" alt="versioning_image_1">
+            <p>
+                Version 2.1: Version 2.1 (now the operational version) improves on Version 2.0 using data augmentation
+                in the training set. By replicating days when 99 th percentile rain events were observed, we can increase
+                the occurrence of the extreme events in the training dataset substantially—to reach approximately 10%
+                of the dataset. This resulted in substantially better training metrics over the initial internal version. This
+                operational version uses networks trained on the augmented dataset for the 99 th percentile category.
+                This version became the operational version on 23 December 2022, with the first 99 th percentile results
+                displayed at that time.
+            </p>
+            <img class="img-fluid" src="resources/versioning_images_2.png" alt="versioning_image_2">
+            <p>
+                Version 2.2: Under development and test, this version will provide users who are interested in the
+                most extreme (99 th percentile) events with two mapping alternatives—the same look and feel of Version
+                2.1, with the option to alternatively select a 4-category system that focuses attention only on the most
+                likely areas of exceedance at that level (as exemplified below).Implementation is anticipated prior to 31
+                December 2022.
+            </p>
+            <img class="img-fluid" src="resources/versioning_images_3.png" alt="versioning_image_3">
+
             <br>
             <br>
             <h2 id="faq">FAQ</h2>
