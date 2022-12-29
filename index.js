@@ -234,9 +234,9 @@ app.get('/aws', async (req, res) => {
         }
         if(j === 6 && !standard) {
             for(let i = 1; i <= 10; i++) {
-                let newNameArr = rootName.split('_');
-                let newName = `${newNameArr[0]}_${newNameArr[1]}_${i}--_categories_99th.png`;
+                let newName = rootName + i + '_99th_categories.png';
                 fileNames.push(newName);
+                //console.log(rootName + i + '_categories' + percentile);
             }
         } else {
             for(let i = 1; i <= 10; i++) {
@@ -244,7 +244,6 @@ app.get('/aws', async (req, res) => {
             }
         }
     }
-    //console.log('\nSep:', fileNames);
     gatherURL(fileNames, function() {
         res.send(imageURLS);
     });
