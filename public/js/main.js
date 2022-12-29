@@ -1294,6 +1294,7 @@ function updateTheme(isChecked, isInitializing = false) {
     let feedbackEmail = document.getElementById('feedback-email');
     let feedbackCoordinates = document.getElementById('feedback-coordinates');
     let chartTip = document.getElementById('tooltiptext');
+    let button99 = document.getElementById('button-99-toggle');
 
     if (isChecked) {
         // Set Dark Theme
@@ -1326,6 +1327,8 @@ function updateTheme(isChecked, isInitializing = false) {
         submitFeedback.style.borderColor = '#0d6efd';
         submitButton.style.backgroundColor = '#0d6efd';
         submitButton.style.borderColor = '#0d6efd';
+        button99.style.backgroundColor = '#0d6efd';
+        button99.style.borderColor = '#0d6efd';
         feedbackSection.style.backgroundColor = '#292929';
         feedbackInit.style.backgroundColor = '#161616';
         feedbackInit.style.color = 'white';
@@ -1392,6 +1395,8 @@ function updateTheme(isChecked, isInitializing = false) {
         submitFeedback.style.borderColor = '#77c743';
         submitButton.style.backgroundColor = '#77c743';
         submitButton.style.borderColor = '#77c743';
+        button99.style.backgroundColor = '#77c743';
+        button99.style.borderColor = '#77c743';
         feedbackSection.style.backgroundColor = '#fff';
         feedbackInit.style.backgroundColor = '#fff';
         feedbackInit.style.color = '#000';
