@@ -10,7 +10,6 @@ const resolution = document.querySelectorAll('.button-resolution');
 const contactCheckbox = document.querySelectorAll('.form-check-input-light');
 const activePreviewButton = document.querySelectorAll('.btn-outline-primary');
 
-
 const INITIALIZE_HISTORY_LIMIT = 5;
 const DAY_MS = 86400000;
 const HOUR_MS = DAY_MS / 24;
@@ -62,7 +61,7 @@ let resetGrid = false;
 let canMoveDays = true;
 let hasSelectedCoordinate = false;
 let feedbackViewable = false;
-let modifiedScale = false;
+let standardMapStyle = true;
 
 let timeSeriesCanvas = null;
 let timeSeriesCanvas2 = null;
@@ -183,7 +182,7 @@ function loadCanvas() {
         let thresholdCanvas = document.getElementById('threshold-canvas');
         let thresholdImage = document.getElementById('threshold-image');
 
-        if(currentSigma === 3 && modifiedScale) {
+        if(currentSigma === 3 && !standardMapStyle) {
             loadModifiedCanvas();
             return;
         }
@@ -959,7 +958,7 @@ function createGrid() {
     let xOffset = 0;
     let yOffset = 0;
 
-    if(currentSigma === 3 && modifiedScale) {
+    if(currentSigma === 3 && !standardMapStyle) {
         x *= _xRatio;
         y *= _yRatio;
         xOffset = width * (_leftToImage / _xWidth);
@@ -1097,11 +1096,12 @@ function retrieveImages(_callback = () => {}) {
         model: getModelPrefix(),
         offset: getDateOffset()
     }
-    img.src = (currentSigma === 3 && modifiedScale) ? 'resources/blankForecast2.png' : 'resources/blankForecast.png';
+    img.src = (currentSigma === 3 && !standardMapStyle) ? 'resources/blankForecast2.png' : 'resources/blankForecast.png';
     $.get(window.location.href + 'aws3', param, function(date) {
         let imgParam = {
             file: param.prefix + getModelPrefix() + date + '_',
-            suffix: param.suffix
+            suffix: param.suffix,
+            standard: standardMapStyle
         };
         currentLabelDate = date;
         updateDayLabel(date);
@@ -1604,6 +1604,12 @@ function updateMean(newSigma) {
         updateThresholdImage();
         updateThresholdSlider();
     }
+    let element = document.getElementById('map-style-id');
+    if(parseFloat(newSigma) === 3) {
+        element.style.display = 'flex';
+    } else {
+        element.style.display = 'none';
+    }
 }
 
 function updateThresholdSlider() {
@@ -1665,6 +1671,13 @@ function emptyCaches() {
     hasSelectedCoordinate = false;
 
     cleanTimeSeries();
+}
+
+function setMapStyle(type) {
+    let element = document.getElementById('button-99-toggle');
+    element.innerText = type;
+    standardMapStyle = type === 'Standard';
+    retrieveImages();
 }
 
 function updateResolution(quality) {
@@ -1735,6 +1748,14 @@ document.getElementById('option-stacked').addEventListener('click', function() {
 });
 document.getElementById('option-bar').addEventListener('click', function() {
     updateChart('bar', false);
+});
+
+// 99th Percentile Map Style
+document.getElementById('option-standard').addEventListener('click', function() {
+    setMapStyle('Standard');
+});
+document.getElementById('option-simplified').addEventListener('click', function() {
+    setMapStyle('Simplified');
 });
 
 // Chart Location Selection

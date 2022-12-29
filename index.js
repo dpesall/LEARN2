@@ -202,9 +202,10 @@ app.get('/feedback', async (req, res) => {
     });
 });
 
-let modifiedScale = false;
+let standard = true;
 app.get('/aws', async (req, res) => {
     let rootName = req.query.file;
+    standard = req.query.standard === 'true';
     let fileNames = [];
     for(let j = 0; j < 7; j++) {
         let percentile = '';
@@ -231,7 +232,7 @@ app.get('/aws', async (req, res) => {
                 percentile = '_99th.png';
                 break;
         }
-        if(j === 6 && modifiedScale) {
+        if(j === 6 && !standard) {
             for(let i = 1; i <= 10; i++) {
                 let newNameArr = rootName.split('_');
                 let newName = `${newNameArr[0]}_${newNameArr[1]}_${i}--_categories_99th.png`;
@@ -243,6 +244,7 @@ app.get('/aws', async (req, res) => {
             }
         }
     }
+    //console.log('\nSep:', fileNames);
     gatherURL(fileNames, function() {
         res.send(imageURLS);
     });
