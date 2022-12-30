@@ -235,7 +235,7 @@ body {
 .gui-section{
     display: flex;
 }
-.gui-info-left, .gui-section-right {
+.gui-info-left, .gui-info-right {
     display: flex;
     flex-direction: column;
     width: 50%;
