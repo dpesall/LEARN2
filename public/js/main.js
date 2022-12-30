@@ -1681,7 +1681,7 @@ function emptyCaches() {
 function setMapStyle(type) {
     let element = document.getElementById('button-99-toggle');
     element.innerText = type;
-    standardMapStyle = type === '40 Levels';
+    standardMapStyle = type === '20 Levels';
     retrieveImages();
 }
 
@@ -1757,7 +1757,7 @@ document.getElementById('option-bar').addEventListener('click', function() {
 
 // 99th Percentile Map Style
 document.getElementById('option-standard').addEventListener('click', function() {
-    setMapStyle('40 Levels');
+    setMapStyle('20 Levels');
 });
 document.getElementById('option-simplified').addEventListener('click', function() {
     setMapStyle('4 Levels');
