@@ -341,43 +341,37 @@
             <br>
             <h3><b style="color:#e0f42b">Version 2.1</b></h3>
             <p>
-                Version 2.1 (the previous operational version) improved on Version 2.0 using data augmentation in the
-                training set. By replicating days when 99th percentile rain events were observed, we can increase the occurrence of 
-                the extreme events in the training dataset substantially — to reach approximately 10% of the dataset. This resulted in 
-                substantially better training metrics over the initial internal version. This operational version uses networks
-                trained on the augmented dataset for the 99th percentile category. This version became the operational version on 23
-                December 2022, with the first 99th percentile results displayed at that time.
+                Version 2.1 (the previous operational version) improved on Version 2.0 using data augmentation in the training set. 
+                By replicating days when 99th percentile rain events were observed, we can increase the occurrence of the extreme events in 
+                the training dataset substantially—to reach approximately 10% of the dataset. This resulted in substantially better training metrics
+                 over the initial internal version. This operational version uses networks trained on the augmented dataset for the 99th percentile category. 
+                 This version became the operational version on 23 December 2022, with the first 99th percentile results displayed at that time.
             </p>
             <img class="img-fluid" src="resources/versioning_images_2.png" alt="versioning_image_2">
             <br>
             <br>
             <h3><b style="color:#e0f42b">Version 2.2</b></h3>
-            <p> Version 2.2 (now the operational version) now provides users who are interested in the most 
-                extreme (99 th percentile) events with two mapping granularities—the same look and feel of Version 2.1, 
-                with the option to alternatively select a 4-category system (99th percentile only) that focuses attention 
-                towards the most likely areas of exceedance at that level (as exemplified below). Setting the thresholds for the 
-                four categories, or levels, is a balancing act — seeking to minimize the number of false positives, while aspiring to 
-                retain the largest number of true positives. </p>
-                
-                <p>There is no single perfect number for any of the three category 
-                boundaries: Not Likely / Less Likely; Less Likely to Likely; and Likely to Most Likely. While the ratio of true 
-                to false positives rises rapidly as a function of the Less Likely to Likely threshold, it runs the risk of dropping
-                 too many true positives. Yet, it is critical to limit the number of false positives to ensure the tool is operationally useful. 
-                 That said, any dropped Most Likely true positives will still end up in the Likely category. For that reason, we settled on the 
-                 following limits (subject to change in the future if warranted): Not Likely, 0.0 to 0.1; Less Likely, 0.1 to 0.2; Likely, 0.2 to 0.4; and Most Likely,
-                  0.4 and up. In the region of 0.4, the ratio of true to false positives has improved to approximately unity for the Vote model. Any higher and too many
-                   true positives (verified 99th percentile grid points) are dropped for little loss of residual false positives.
+            <p>Version 2.2 (now the operational version) now provides users who are interested in the most extreme (99th percentile) events with two mapping
+                 granularities—the same look and feel of Version 2.1, with the option to alternatively select a 4-category system (99th percentile only) that 
+                 focuses attention towards the most likely areas of exceedance at that level (as exemplified below). Setting the thresholds for the four categories, 
+                 or levels, is a balancing act—seeking minimize the number of false positives, while aspiring to retain the largest number of true positives. </p>
+                 <p>
+                 There is no single perfect number for any of the three category boundaries: Not Likely / Less Likely; Less Likely to Likely; and Likely to Most Likely. 
+                 While the ratio of true to false positives rises rapidly as a function of the Less Likely to Likely threshold, it runs the risk of dropping too many true positives. 
+                 Yet, it is critical to limit the number of false positives to ensure the tool is operationally useful. That said, any dropped Most Likely true positives will still 
+                 end up in the Likely category. For that reason, we settled on the following limits (subject to change in the future if warranted): Not Likely, 0.0 to 0.1; Less Likely, 
+                 0.1 to 0.2; Likely, 0.2 to 0.4; and Most Likely, 0.4 and up. In the region of 0.4, the ratio of true to false positives has improved to approximately unity for the Vote model. 
+                 Any higher and too many true positives (verified 99th percentile grid points) are dropped for little loss of residual false positives.
             </p>
             <img class="img-fluid" src="resources/v2-2.png" alt="versioning_image_3">
             <br>
             <br>
             <h3><b style="color:#e0f42b">Version 3.0</b></h3>
-            <p>Version 3.0 is under currently development. It seeks to optimize weighting of the four models 
-                (NCEP GEFS, ECMWF EPS, convolutional neural network, and densely connected neural network) using a scheme that 
-                balances the model contributions (confidence-weighted votes) against the skill that they add—as a function of
-                 prediction day (1-10) and threshold (50% to 99%) percentile. We are seeing some modest additional skill, 
-                 especially at the highest rainfall categories and in the near-term predictions (Days 1-3). Implementation 
-                 is anticipated prior to 31 January 2022.</p>
+            <p>This version is under currently development. It seeks to optimize weighting of the four models
+                 (NCEP GEFS, ECMWF EPS, convolutional neural network, and densely connected neural network) using a scheme that balances 
+                 the model contributions (confidence-weighted votes) against the skill that they add—as a function of prediction day (1-10)
+                  and threshold (50% to 99%) percentile. We are seeing some modest additional skill, especially at the highest rainfall categories 
+                  and in the near-term predictions (Days 1-3). Implementation is anticipated prior to 31 January 2022.</p>
 
             <br>
             <br>
