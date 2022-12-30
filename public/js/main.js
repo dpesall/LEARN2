@@ -61,7 +61,7 @@ let resetGrid = false;
 let canMoveDays = true;
 let hasSelectedCoordinate = false;
 let feedbackViewable = false;
-let standardMapStyle = true;
+let standardMapStyle = false;
 
 let timeSeriesCanvas = null;
 let timeSeriesCanvas2 = null;
