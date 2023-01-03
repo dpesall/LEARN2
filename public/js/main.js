@@ -45,10 +45,12 @@ const chartSettingsLight = {
 let chartSettingsCurrent = chartSettingsDark;
 
 let currentSigma = .5;
+let previousSigma = .5;
 let forecastDayIndex = 1;
 let currentInitialize = 5;
 let savedLatitude = -1;
 let savedLongitude = -1;
+let resizeDelay = 0;
 
 let previewsEnabled = false;
 let isTodayStored = false;
@@ -61,7 +63,7 @@ let resetGrid = false;
 let canMoveDays = true;
 let hasSelectedCoordinate = false;
 let feedbackViewable = false;
-let standardMapStyle = false;
+let standardMapStyle = true;
 
 let timeSeriesCanvas = null;
 let timeSeriesCanvas2 = null;
@@ -395,7 +397,9 @@ function showTimeSeries(x, y, res, fromClicked = false) {
     savedX = x;
     savedY = y;
     chartSettingsCurrent = dark ? chartSettingsDark : chartSettingsLight;
-    updateCanvas(x, y);
+    setTimeout(() => {
+        updateCanvas(x, y)
+    }, resizeDelay);
     chartLoadedOnce = true;
 
     let latitude = 0;
@@ -678,6 +682,7 @@ function paintCanvas(x, y, ctx, canvas) {
 }
 
 function updateCanvas(x, y) {
+    resizeDelay = 0;
     let canvasForecast = document.getElementById('forecast-canvas');
     let canvasThreshold = document.getElementById('threshold-canvas');
 
@@ -1169,8 +1174,10 @@ function setPreviewImages(cache) {
             threadPreviewImage(cache, img, i - 1 + (10 * currentSigma * 2));
             if(i === 10) {
                 let modelButton = document.getElementById('button-model-dropdown');
+                let levelsButton = document.getElementById('button-99-toggle');
                 setTimeout(() => {
                     modelButton.classList.remove('disabled');
+                    levelsButton.classList.remove('disabled');
                 }, 500);
             }
         }
@@ -1597,6 +1604,7 @@ function updateMean(newSigma) {
     let threshold = document.getElementById('threshold');
     let meanLabel = document.getElementById('mean-label');
     if(newSigma <= 3 && newSigma >= 0) {
+        previousSigma = currentSigma;
         currentSigma = parseFloat(newSigma);
         let thresholdValue = convertSigma(currentSigma);
         threshold.textContent = `${thresholdValue}`;
@@ -1604,6 +1612,12 @@ function updateMean(newSigma) {
 
         let offset = (10 * (currentSigma * 2)) + (forecastDayIndex - 1);
         mapArray = allCSVArray[offset];
+
+        if(currentSigma === 3) {
+            resizeDelay = 500;
+        } else if(previousSigma === 3) {
+            resizeDelay = 500;
+        }
 
         updateImages();
         updateThresholdImage();
@@ -1681,6 +1695,10 @@ function emptyCaches() {
 function setMapStyle(type) {
     let element = document.getElementById('button-99-toggle');
     element.innerText = type;
+    setTimeout(() => {
+        element.classList.add('disabled');
+    }, 0);
+
     standardMapStyle = type === '20 Levels';
     retrieveImages();
 }
