@@ -172,7 +172,7 @@
           <div class="showSingle content-links" target="6"><em>vi. </em>Control Panel</div>
           <div class="showSingle content-links" target="7"><em>vii. </em>Forecast day panel</div>
           <div class="showSingle content-links" target="8"><em>viii. </em>Cursor utilization</div>
-          <div class="showSingle content-links" target="9"><em>vix. </em>Map Style</div>
+          <div class="showSingle content-links" target="9"><em>vix. </em>Map Granularity</div>
           </div>
            
        </div>
@@ -310,49 +310,73 @@
 
                     </div>
                     <div id="GI-9" class="targetDiv">
-                        <h2>Map Style</h2>
+                        <h2>Map Granularity</h2>
                         <hr>
                         <div class="gui-img">
                         <img src="/resources/button-99.png" alt='map_style_image' width="100%">
                         </div>
-                        <p>Map style can be changed to a more simplified version, with only 4 colors. This toggle will only exist for the 99th percentile.</p>
+                        <p>Map style can be changed to a more simplified version, with only 4 categories. This toggle will only exist for the 99th percentile.</p>
             </div>
       </section>
             <br>
             <br>
             <h2 id="versions">Versions</h2>
             <hr>
+            <h3><b style="color:#e0f42b">Version 1.0</b></h3>
             <p>
-                Version 1.0: Version 1.0 was our operational model through 22 December 2022. It included six
-                threshold exceedance levels: the 50 th , 60 th , 70 th , 80 th , 90 th and 95 th percentiles. Because operational
+                Version 1.0 was our operational model through 22 December 2022. It included six
+                threshold exceedance levels: the 50th, 60th, 70th, 80th, 90th and 95th percentiles. Because operational
                 meteorologists’ and hydrologists’ interest focused on the most extreme events, this version is now being
-                replaced by Version 2.1, which now adds an additional 99 th percentile category.
+                replaced by Version 2.1, which now adds an additional 99th percentile category.
                 Version 2.0 (internal only): This internal version implemented an additional extreme rainfall exceedance
-                category (99 th percentile), and was used for development and testing. A limitation of this version is that
+                category (99th percentile), and was used for development and testing.</p>
+                <p> A limitation of this version is that
                 events of this intensity are rare (by definition), and, as a result, the training dataset is significantly
-                unbalanced—with far fewer days and grid points exceeding the 99 th percentile than those below it.
+                unbalanced—with far fewer days and grid points exceeding the 99th percentile than those below it.
                 While some skill is evident (see 27 March 2005 example below as compared to the PRISM verification),
                 this imbalance causes the neural networks to be overly conservative in most cases.
             </p>
             <img class="img-fluid" src="resources/versioning_images_1.png" alt="versioning_image_1">
+            <br>
+            <br>
+            <h3><b style="color:#e0f42b">Version 2.1</b></h3>
             <p>
-                Version 2.1: Version 2.1 (now the operational version) improves on Version 2.0 using data augmentation
-                in the training set. By replicating days when 99 th percentile rain events were observed, we can increase
-                the occurrence of the extreme events in the training dataset substantially—to reach approximately 10%
-                of the dataset. This resulted in substantially better training metrics over the initial internal version. This
-                operational version uses networks trained on the augmented dataset for the 99 th percentile category.
-                This version became the operational version on 23 December 2022, with the first 99 th percentile results
-                displayed at that time.
+                Version 2.1 (the previous operational version) improved on Version 2.0 using data augmentation in the training set. 
+                By replicating days when 99th percentile rain events were observed, we can increase the occurrence of the extreme events in 
+                the training dataset substantially—to reach approximately 10% of the dataset. This resulted in substantially better training metrics
+                 over the initial internal version. This operational version uses networks trained on the augmented dataset for the 99th percentile category. 
+                 This version became the operational version on 23 December 2022, with the first 99th percentile results displayed at that time.
             </p>
             <img class="img-fluid" src="resources/versioning_images_2.png" alt="versioning_image_2">
-            <p>
-                Version 2.2: Under development and test, this version will provide users who are interested in the
-                most extreme (99 th percentile) events with two mapping alternatives—the same look and feel of Version
-                2.1, with the option to alternatively select a 4-category system that focuses attention only on the most
-                likely areas of exceedance at that level (as exemplified below).Implementation is anticipated prior to 31
-                December 2022.
+            <br>
+            <br>
+            <h3><b style="color:#e0f42b">Version 2.2</b></h3>
+            <p>Version 2.2 (now the operational version) now provides users who are interested in the most extreme (99th percentile) events with two mapping
+                 granularities—the same look and feel of Version 2.1, with the option to alternatively select a 4-category system (99th percentile only) that 
+                 focuses attention towards the most likely areas of exceedance at that level (as exemplified below). Setting the thresholds for the four categories, 
+                 or levels, is a balancing act—seeking minimize the number of false positives, while aspiring to retain the largest number of true positives. </p>
+                 <p>
+                 There is no single perfect number for any of the three category boundaries: Not Likely / Less Likely; Less Likely to Likely; and Likely to Most Likely. 
+                 While the ratio of true to false positives rises rapidly as a function of the Less Likely to Likely threshold, it runs the risk of dropping too many true positives. 
+                 Yet, it is critical to limit the number of false positives to ensure the tool is operationally useful. That said, any dropped Most Likely true positives will still 
+                 end up in the Likely category. For that reason, we settled on the following limits (subject to change in the future if warranted): Not Likely, 0.0 to 0.1; Less Likely, 
+                 0.1 to 0.2; Likely, 0.2 to 0.4; and Most Likely, 0.4 and up. In the region of 0.4, the ratio of true to false positives has improved to approximately unity for the Vote model. 
+                 Any higher and too many true positives (verified 99th percentile grid points) are dropped for little loss of residual false positives.
             </p>
-            <img class="img-fluid" src="resources/versioning_images_3.png" alt="versioning_image_3">
+            <img class="img-fluid" src="resources/v2-2.png" alt="versioning_image_3">
+            <br>
+            <br>
+            
+            <h3><b style="color:#e0f42b">Version 2.2.1</b></h3>
+            <p>This administrative update improves the updating of images when toggling through models at 99th percentile.</p>
+            <br>
+           
+            <h3><b style="color:#e0f42b">Version 3.0</b></h3>
+            <p>This version is under currently development. It seeks to optimize weighting of the four models
+                 (NCEP GEFS, ECMWF EPS, convolutional neural network, and densely connected neural network) using a scheme that balances 
+                 the model contributions (confidence-weighted votes) against the skill that they add—as a function of prediction day (1-10)
+                  and threshold (50% to 99%) percentile. We are seeing some modest additional skill, especially at the highest rainfall categories 
+                  and in the near-term predictions (Days 1-3). Implementation is anticipated prior to 31 January 2022.</p>
 
             <br>
             <br>
