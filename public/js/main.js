@@ -1700,6 +1700,10 @@ function setMapStyle(type) {
     }, 0);
 
     standardMapStyle = type === '20 Levels';
+
+    let image = document.getElementById('forecast-image');
+    image.src = standardMapStyle ? 'resources/blankForecast2.png' : 'resources/blankForecast2.png';
+
     retrieveImages();
 }
 
