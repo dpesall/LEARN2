@@ -1619,9 +1619,13 @@ function updateMean(newSigma) {
             resizeDelay = 500;
         }
 
-        updateImages();
-        updateThresholdImage();
-        updateThresholdSlider();
+        setImagePlaceholder(() => {
+            setTimeout(() => {
+                updateImages();
+                updateThresholdImage();
+                updateThresholdSlider();
+            }, getFramePause());
+        });
     }
     let element = document.getElementById('map-style-id');
     if(parseFloat(newSigma) === 3) {
@@ -1629,6 +1633,27 @@ function updateMean(newSigma) {
     } else {
         element.style.display = 'none';
     }
+}
+
+function getFramePause() {
+    if(currentSigma !== 3 && previousSigma !== 3) {
+        return 0;
+    }
+    if((currentSigma === 3 && previousSigma !== 3) || (currentSigma !== 3 && previousSigma === 3)) {
+        if(!standardMapStyle) {
+            return 500;
+        }
+        return 0;
+    }
+}
+
+function setImagePlaceholder(_callback) {
+    let image = document.getElementById('forecast-image');
+    let shouldUseModifiedSize = currentSigma === 3 && !standardMapStyle;
+
+    image.src = shouldUseModifiedSize ? 'resources/blankForecast2.png' : 'resources/blankForecast.png';
+
+    _callback();
 }
 
 function updateThresholdSlider() {
