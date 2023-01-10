@@ -206,7 +206,7 @@ function loadCanvas() {
         thresholdCanvas.width = thresholdImage.width * xRatioThreshold;
         thresholdCanvas.style.left = (thresholdImage.offsetLeft + xOffset2) + 'px';
         thresholdCanvas.style.top = (thresholdImage.offsetTop + yOffset2) + 'px';
-    }, 250);
+    }, 0);
 }
 
 function setChartLocation(location) {
@@ -1639,7 +1639,7 @@ function getFramePause() {
     if(currentSigma !== 3 && previousSigma !== 3) {
         return 0;
     }
-    if((currentSigma === 3 && previousSigma !== 3) || (currentSigma !== 3 && previousSigma === 3)) {
+    if((currentSigma === 3 && previousSigma !== 3) || (currentSigma !== 3 && previousSigma === 3) || (currentSigma === 3 && previousSigma === 3)) {
         if(!standardMapStyle) {
             return 500;
         }
@@ -1729,7 +1729,13 @@ function setMapStyle(type) {
     let image = document.getElementById('forecast-image');
     image.src = standardMapStyle ? 'resources/blankForecast2.png' : 'resources/blankForecast2.png';
 
-    retrieveImages();
+    resizeDelay = 500;
+    setImagePlaceholder(() => {
+        setTimeout(() => {
+            retrieveImages();
+        }, getFramePause());
+    });
+
 }
 
 function updateResolution(quality) {
