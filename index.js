@@ -24,7 +24,7 @@ app.get('/user_guide', function(req,res) {
     });
 });
 
-const bucket = process.env.BUCKET_NAME;
+let bucket = process.env.BUCKET_NAME;
 const s3 = new AWS.S3();
 let csvData = [];
 async function makePromiseSet(fileNames, functionName, start) {
@@ -250,29 +250,40 @@ app.get('/aws', async (req, res) => {
 });
 
 const args = process.argv;
-if(args[2] !== 'https') {
-    app.listen(8080,()=>{
-        console.log('Web Server running on port', 8080);
-    });
-} else {
-    const privateKey = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/privkey.pem', 'utf8');
-    const certificate = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/cert.pem', 'utf8');
-    const ca = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/chain.pem', 'utf8');
-
-    const credentials = {
-        key: privateKey,
-        cert: certificate,
-        ca: ca
+switch(args[2]) {
+    case 'custom-s3': {
+        bucket = args[3] || process.env.BUCKET_NAME;
+        app.listen(8080,()=>{
+            console.log('Web Server running on port', 8080);
+        });
+        break;
     }
+    case 'https': {
+        const privateKey = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/privkey.pem', 'utf8');
+        const certificate = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/cert.pem', 'utf8');
+        const ca = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/chain.pem', 'utf8');
 
-    const httpPort = 80
-    const httpsPort = 443
-    const httpsServer = https.createServer(credentials, app);
-    const httpServer = http.createServer(app);
-    httpServer.listen(httpPort, () => {
-        console.log("HTTP Server running on port", httpPort);
-    });
-    httpsServer.listen(httpsPort, () => {
-        console.log("HTTPS Server running on port", httpsPort);
-    });
+        const credentials = {
+            key: privateKey,
+            cert: certificate,
+            ca: ca
+        }
+
+        const httpPort = 80
+        const httpsPort = 443
+        const httpsServer = https.createServer(credentials, app);
+        const httpServer = http.createServer(app);
+        httpServer.listen(httpPort, () => {
+            console.log("HTTP Server running on port", httpPort);
+        });
+        httpsServer.listen(httpsPort, () => {
+            console.log("HTTPS Server running on port", httpsPort);
+        });
+        break;
+    }
+    default: {
+        app.listen(8080,()=>{
+            console.log('Web Server running on port', 8080);
+        });
+    }
 }
