@@ -156,6 +156,27 @@ function pad(n) {
     return (n < 10) ? ('0' + n) : n;
 }
 
+app.get('/aws4', async (req, res) => {
+    let prefix = req.query.prefix + req.query.model;
+    let suffix = '_1_' + req.query.suffix + '.png';
+    let keyName = prefix + req.query.date + suffix;
+    const exists = await s3.headObject({
+            Bucket: bucket,
+            Key: keyName,
+        })
+        .promise()
+        .then(
+            () => true,
+            err => {
+                if (err.code === 'NotFound') {
+                    return false;
+                }
+                throw err;
+            }
+        );
+    res.send(exists);
+});
+
 app.get('/aws3', async (req, res) => {
     let dateObject = new Date();
     let dateOffset = parseInt(req.query.offset);

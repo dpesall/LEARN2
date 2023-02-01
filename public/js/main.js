@@ -10,7 +10,7 @@ const resolution = document.querySelectorAll('.button-resolution');
 const contactCheckbox = document.querySelectorAll('.form-check-input-light');
 const activePreviewButton = document.querySelectorAll('.btn-outline-primary');
 
-const INITIALIZE_HISTORY_LIMIT = 5;
+const INITIALIZE_HISTORY_LIMIT = 365;
 const DAY_MS = 86400000;
 const HOUR_MS = DAY_MS / 24;
 const BUFFER_SIZE = 70;
@@ -47,7 +47,7 @@ let chartSettingsCurrent = chartSettingsDark;
 let currentSigma = .5;
 let previousSigma = .5;
 let forecastDayIndex = 1;
-let currentInitialize = 5;
+let currentInitialize = INITIALIZE_HISTORY_LIMIT;
 let savedLatitude = -1;
 let savedLongitude = -1;
 let resizeDelay = 0;
@@ -58,7 +58,6 @@ let chartStacked = false;
 let chartLoadedOnce = false;
 let isPanelLocked = true;
 let dark = true;
-let fullStop = true;
 let resetGrid = false;
 let canMoveDays = true;
 let hasSelectedCoordinate = false;
@@ -96,6 +95,19 @@ let csvCache = Array(14);
 window.onload = function() {
     initializePreview();
     initializeTheme();
+    initializeDropdowns(function() {
+        document.querySelectorAll('.day-item').forEach(item => {
+            item.addEventListener('click', event => {
+                document.querySelector('#button-day').textContent = event.target.textContent;
+            });
+        });
+
+        document.querySelectorAll('.year-item').forEach(item => {
+            item.addEventListener('click', event => {
+                document.querySelector('#button-year').textContent = event.target.textContent;
+            });
+        });
+    });
 }
 
 Array.prototype.max = function() {
@@ -105,6 +117,26 @@ Array.prototype.max = function() {
 Array.prototype.min = function() {
     return Math.min.apply(null, this);
 };
+
+function initializeDropdowns(_callback) {
+    let dayDropdown = document.getElementById('dropdown-day');
+    let yearDropdown = document.getElementById('dropdown-year');
+
+    let newHTML = '';
+    for(let i = 1; i <= 31; i++) {
+        newHTML += `<li><a class="dropdown-item day-item" id="option-${i}">${i}</a></li>\n`
+    }
+    dayDropdown.innerHTML = newHTML;
+
+    let currentYear = new Date();
+    newHTML = '';
+    for(let i = currentYear.getFullYear(); i >= 2022; i--) {
+        newHTML += `<li><a class="dropdown-item year-item" id="option-${i}">${i}</a></li>\n`
+    }
+    yearDropdown.innerHTML = newHTML;
+
+    _callback();
+}
 
 function submitFeedback() {
     let initValue = document.getElementById('feedback-init').value;
@@ -1090,6 +1122,7 @@ function hideFeedbackSuccessText() {
 function retrieveImages(_callback = () => {}) {
     hideFeedbackSuccessText();
     let spinner = document.getElementById('loading-spinner-id');
+    let submitSpinner = document.getElementById('calendar-spinner-id');
     let img = document.getElementById('forecast-image');
 
     spinner.style.display = 'block';
@@ -1144,6 +1177,7 @@ function retrieveImages(_callback = () => {}) {
             }
             canMoveDays = true;
             toggleInitButtons();
+            submitSpinner.style.display = 'none';
             spinner.style.display = 'none';
             _callback();
         });
@@ -1661,6 +1695,71 @@ function updateThresholdSlider() {
     thresholdSlider.value = currentSigma;
 }
 
+function submitCalendar() {
+    let day = Number(document.getElementById('button-day').innerText);
+    let month = document.getElementById('button-month').innerText;
+    let year = Number(document.getElementById('button-year').innerText);
+
+    let submitSpinner = document.getElementById('calendar-spinner-id');
+    submitSpinner.style.display = 'inline-block';
+
+    let monthValue = convertMonthToInt(month);
+
+    let dateString = `${year}-${pad(monthValue)}-${pad(day)}`
+
+    let param = {
+        prefix: getPrefix(),
+        suffix: sigmaToPercentile(true),
+        model: getModelPrefix(),
+        date: dateString
+    }
+    $.get(window.location.href + 'aws4', param, function(isValid) {
+        if(isValid) {
+            updateInitializationDate(pad(day), pad(month), year);
+        } else {
+            alert(`The date: ${pad(month)} ${pad(day)}, ${year} does not have data.`);
+            submitSpinner.style.display = 'none';
+        }
+    });
+}
+
+function convertMonthToInt(month) {
+    switch(month) {
+        case 'January': return 1;
+        case 'February': return 2;
+        case 'March': return 3;
+        case 'April': return 4;
+        case 'May': return 5;
+        case 'June': return 6;
+        case 'July': return 7;
+        case 'August': return 8;
+        case 'September': return 9;
+        case 'October': return 10;
+        case 'November': return 11;
+        case 'December': return 12;
+    }
+}
+
+function updateInitializationDate(day, month, year) {
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
+    let forecastDateLabel = document.getElementById('main-forecast-date');
+    let dateInitialize = document.getElementById('init');
+
+    let currentDate = new Date(`${month} ${day} ${year}`);
+    let newDateArr = currentDate.toDateString().split(' ');
+
+    let dateDiff = Math.floor((new Date().getTime() - currentDate.getTime()) / (1000 * 3600 * 24));
+    currentInitialize = INITIALIZE_HISTORY_LIMIT - dateDiff;
+
+    dateInitialize.textContent = `${newDateArr[1]} ${newDateArr[2]} ${newDateArr[3]} (00Z)`;
+    forecastDateLabel.textContent = `${newDateArr[1]} ${newDateArr[2]}, ${newDateArr[3]}`;
+    retrieveImages(function() {
+        updateImages();
+    });
+}
+
 function updateDate(increment) {
     if(feedbackViewable) {
         populateIssueBoxes();
@@ -1780,6 +1879,12 @@ function updateForecastSlider(day) {
     forecastSlider.value = day;
 }
 
+document.querySelectorAll('.month-item').forEach(item => {
+    item.addEventListener('click', event => {
+        document.querySelector('#button-month').textContent = event.target.textContent;
+    });
+});
+
 // Model Selection
 document.getElementById('option-dense').addEventListener('click', function() {
     updateModel('Dense');
@@ -1841,9 +1946,21 @@ document.getElementById('button-feedback-id').addEventListener('click', function
     hideFeedbackSuccessText();
 });
 
+// Calendar Submit
+document.getElementById('calendar-submit').addEventListener('click', function() {
+    submitCalendar();
+});
+
 // Feedback Submit Button
 document.getElementById('button-submit-id').addEventListener('click', function() {
     submitFeedback();
+});
+
+// Calendar Toggle Button
+document.getElementById('calendar-button-id').addEventListener('click', function() {
+    let calendar = document.getElementById('calendar-id');
+    let currentlyViewable = calendar.style.display === 'flex';
+    calendar.style.display = currentlyViewable ? 'none' : 'flex';
 });
 
 // Forecast Increment Buttons
@@ -1938,8 +2055,6 @@ window.addEventListener('resize', function(){
 $( window ).on( "load", function() {
     retrieveImages();
 });
-
-
 
 const closeTip = document.getElementById('tooltip-close');
 
