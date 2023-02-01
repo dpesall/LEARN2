@@ -1336,6 +1336,10 @@ function updateTheme(isChecked, isInitializing = false) {
     let feedbackCoordinates = document.getElementById('feedback-coordinates');
     let chartTip = document.getElementById('tooltiptext');
     let button99 = document.getElementById('button-99-toggle');
+    let calendarDay = document.getElementById('button-day');
+    let calendarMonth = document.getElementById('button-month');
+    let calendarYear = document.getElementById('button-year');
+    let calendarSubmit = document.getElementById('calendar-submit');
 
     if (isChecked) {
         // Set Dark Theme
@@ -1386,6 +1390,14 @@ function updateTheme(isChecked, isInitializing = false) {
         feedbackEmail.style.backgroundColor = '#161616';
         feedbackEmail.style.color = 'white';
         feedbackCoordinates.style.backgroundColor = '#161616';
+        calendarDay.style.backgroundColor = '#0d6efd';
+        calendarDay.style.borderColor = '#0d6efd';
+        calendarMonth.style.backgroundColor = '#0d6efd';
+        calendarMonth.style.borderColor = '#0d6efd';
+        calendarYear.style.backgroundColor = '#0d6efd';
+        calendarYear.style.borderColor = '#0d6efd';
+        calendarSubmit.style.backgroundColor = '#0d6efd';
+        calendarSubmit.style.borderColor = '#0d6efd';
         feedbackCoordinates.style.color = 'white';
         chartTip.style.backgroundColor = '#0c6efda3'
         dayButtons.forEach((dayButtons) => {
@@ -1455,7 +1467,16 @@ function updateTheme(isChecked, isInitializing = false) {
         feedbackEmail.style.color = '#000';
         feedbackCoordinates.style.backgroundColor = '#fff';
         feedbackCoordinates.style.color = '#000';
-        chartTip.style.backgroundColor = '#4b9929b3'
+        chartTip.style.backgroundColor = '#4b9929b3';
+        calendarDay.style.backgroundColor = '#4b9929b3';
+        calendarDay.style.borderColor = '#4b9929b3';
+        calendarMonth.style.backgroundColor = '#4b9929b3';
+        calendarMonth.style.borderColor = '#4b9929b3';
+        calendarYear.style.backgroundColor = '#4b9929b3';
+        calendarYear.style.borderColor = '#4b9929b3';
+        calendarSubmit.style.backgroundColor = '#4b9929b3';
+        calendarSubmit.style.borderColor = '#4b9929b3';
+        
 
         dayButtons.forEach((dayButtons) => {
             dayButtons.style.borderColor = "#77c743";
