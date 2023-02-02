@@ -1,6 +1,5 @@
 const rootDirectory = 'resources/'
 const percentileThreshold = '_percentile_threshold';
-const sigmaDaySuffix = '_sigma_Day';
 const highResPrefix = 'High_res_'
 const lowResPrefix = 'Low_res_'
 const extension = '.png'
@@ -128,14 +127,44 @@ function initializeDropdowns(_callback) {
     }
     dayDropdown.innerHTML = newHTML;
 
-    let currentYear = new Date();
+    let currentDate = new Date();
     newHTML = '';
-    for(let i = currentYear.getFullYear(); i >= 2022; i--) {
+    for(let i = currentDate.getFullYear(); i >= 2022; i--) {
         newHTML += `<li><a class="dropdown-item year-item" id="option-${i}">${i}</a></li>\n`
     }
     yearDropdown.innerHTML = newHTML;
 
+    resetDateDropdowns();
+
     _callback();
+}
+
+function resetDateDropdowns() {
+    let currentDate = new Date();
+    let dayButton = document.getElementById('button-day');
+    let monthButton = document.getElementById('button-month');
+    let yearButton = document.getElementById('button-year');
+
+    dayButton.innerHTML = currentDate.getDate().toString();
+    monthButton.innerHTML = monthIntToString(currentDate.getMonth() + 1);
+    yearButton.innerHTML = currentDate.getFullYear().toString();
+}
+
+function monthIntToString(index) {
+    switch(index) {
+        case 1: return 'January';
+        case 2: return 'February';
+        case 3: return 'March';
+        case 4: return 'April';
+        case 5: return 'May';
+        case 6: return 'June';
+        case 7: return 'July';
+        case 8: return 'August';
+        case 9: return 'September';
+        case 10: return 'October';
+        case 11: return 'November';
+        case 12: return 'December';
+    }
 }
 
 function submitFeedback() {
@@ -1975,6 +2004,11 @@ document.getElementById('calendar-submit').addEventListener('click', function() 
 // Feedback Submit Button
 document.getElementById('button-submit-id').addEventListener('click', function() {
     submitFeedback();
+});
+
+// Reset Calendar Dropdowns
+document.getElementById('calendar-reset').addEventListener('click', function() {
+    resetDateDropdowns();
 });
 
 // Calendar Toggle Button
