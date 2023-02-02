@@ -148,6 +148,8 @@ function resetDateDropdowns() {
     dayButton.innerHTML = currentDate.getDate().toString();
     monthButton.innerHTML = monthIntToString(currentDate.getMonth() + 1);
     yearButton.innerHTML = currentDate.getFullYear().toString();
+
+    submitCalendar();
 }
 
 function monthIntToString(index) {
