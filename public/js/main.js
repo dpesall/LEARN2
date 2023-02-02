@@ -1369,6 +1369,7 @@ function updateTheme(isChecked, isInitializing = false) {
     let calendarMonth = document.getElementById('button-month');
     let calendarYear = document.getElementById('button-year');
     let calendarSubmit = document.getElementById('calendar-submit');
+    let calendarReset = document.getElementById('calendar-reset');
 
     if (isChecked) {
         // Set Dark Theme
@@ -1427,6 +1428,8 @@ function updateTheme(isChecked, isInitializing = false) {
         calendarYear.style.borderColor = '#0d6efd';
         calendarSubmit.style.backgroundColor = '#0d6efd';
         calendarSubmit.style.borderColor = '#0d6efd';
+        calendarReset.style.backgroundColor = '#0d6efd';
+        calendarReset.style.borderColor = '#0d6efd';
         feedbackCoordinates.style.color = 'white';
         chartTip.style.backgroundColor = '#0c6efda3'
         dayButtons.forEach((dayButtons) => {
@@ -1505,6 +1508,8 @@ function updateTheme(isChecked, isInitializing = false) {
         calendarYear.style.borderColor = '#4b9929b3';
         calendarSubmit.style.backgroundColor = '#4b9929b3';
         calendarSubmit.style.borderColor = '#4b9929b3';
+        calendarReset.style.backgroundColor = '#4b9929b3';
+        calendarReset.style.borderColor = '#4b9929b3';
         
 
         dayButtons.forEach((dayButtons) => {
