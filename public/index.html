@@ -352,8 +352,53 @@
                     </div>
                   </div>
                 </div>
-
                 <div class="row">
+                  <div class="col-sm-5 extension padding-main control-panel-label">
+                    Threshold Type:
+                  </div>
+                  <div class="col-sm-7 extension padding-main">
+                    <div class="dropdown">
+                      <button class="btn btn-primary dropdown-toggle" style="width: 150px;" id="button-percentile-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Percentile
+                      </button>
+                      <ul id="dropdown-percentile-id" class="dropdown-menu">
+                        <li><a class="dropdown-item" id="option-percentile">Percentile</a></li>
+                        <li><a class="dropdown-item" id="option-static">Static</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div class="row" id="static-threshold-row-id" style="display: none;">
+                  <div class="col-sm-5 extension padding-main control-panel-label">
+                    Threshold:
+                  </div>
+                  <div class="col-sm-7 extension padding-main">
+                    <button class="btn btn-secondary" id="static-threshold-down">&#8592;</button>
+                    <div class="btn btn-primary button-no-pointer" id="static-threshold" style="width: 60px;">0.50</div>
+                    <button class="btn btn-secondary" id="static-threshold-up">&#8594;</button>
+                    Inches
+                  </div>
+                  <div class="container-fluid">
+                    <div class="row">
+                      <div class="threshold-slider-wrapper centered-text">
+                        <input class="threshold-slider" type="range" id="static-threshold-slider-id" name="volume" min="0" max="7" step="1" value="1">
+                      </div>
+                    </div>
+                    <div class="threshold-slider-ticks">
+                      <div class="row">
+                        <div class="col-sm">0.25</div>
+                        <div class="col-sm">0.50</div>
+                        <div class="col-sm">0.75</div>
+                        <div class="col-sm">1.00</div>
+                        <div class="col-sm">1.50</div>
+                        <div class="col-sm">2.00</div>
+                        <div class="col-sm">3.00</div>
+                        <div class="col-sm">4.00</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row" id="percentile-threshold-row-id">
                   <div class="col-sm-5 extension padding-main control-panel-label">
                     Threshold:
                   </div>

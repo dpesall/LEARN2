@@ -219,11 +219,36 @@ function populateIssueBoxes() {
     let coordinateBox = document.getElementById('feedback-coordinates');
 
     initBox.value = currentLabelDate;
-    threshBox.value = sigmaToPercentile(false);
+    if(thresholdType === 'percentile') {
+        threshBox.value = sigmaToPercentile(false);
+    } else {
+        threshBox.value = staticSliderToInches(document.getElementById('static-threshold-slider-id').value);
+    }
     modelBox.value = modelType;
     resBox.value = currentResolution === 'high' ? 'High' : 'Low';
     dayBox.value = forecastDayIndex;
     coordinateBox.value = savedLongitude === -1 ? 'None Selected' : `(${savedLatitude.toFixed(2)}, ${savedLongitude.toFixed(2)})`
+}
+
+function staticSliderToInches(value) {
+    switch(value) {
+        case '0':
+            return 0.25;
+        case '1':
+            return 0.50;
+        case '2':
+            return 0.75;
+        case '3':
+            return 1.00;
+        case '4':
+            return 1.50;
+        case '5':
+            return 2.00;
+        case '6':
+            return 3.00;
+        case '7':
+            return 4.00;
+    }
 }
 
 function loadModifiedCanvas() {
@@ -1551,6 +1576,30 @@ function quickUpdateFromCache(cache) {
     img.src = cache[forecastDayIndex - 1 + (10 * currentSigma * 2)];
 }
 
+let thresholdType = 'percentile';
+function updateThresholdType(type) {
+    if(type === thresholdType) {
+        return;
+    }
+    thresholdType = type;
+    let typeButton = document.getElementById('button-percentile-dropdown');
+    let percentileSection = document.getElementById('percentile-threshold-row-id');
+    let staticSection = document.getElementById('static-threshold-row-id');
+    switch(type) {
+        case 'percentile':
+            typeButton.textContent = 'Percentile';
+            percentileSection.style.display = 'flex';
+            staticSection.style.display = 'none';
+            updateThresholdImage();
+            break;
+        case 'static':
+            typeButton.textContent = 'Static';
+            percentileSection.style.display = 'none';
+            staticSection.style.display = 'flex';
+            break;
+    }
+}
+
 function updateModel(type) {
     if(feedbackViewable) {
         populateIssueBoxes();
@@ -1686,6 +1735,39 @@ function convertSigma(sigma) {
         default:
             return 50 + (currentSigma * 20);
     }
+}
+
+let currentStaticThreshold = .5;
+let staticThresholdImages = [
+    'High_res_fixed_0.25_0.25.png',
+    'High_res_fixed_0.5_0.25.png',
+    'High_res_fixed_0.75_0.25.png',
+    'High_res_fixed_1_0.25.png',
+    'High_res_fixed_1.5_0.25.png',
+    'High_res_fixed_2_0.25.png',
+    'High_res_fixed_3_0.25.png',
+    'High_res_fixed_4_0.25.png',
+]
+function updateStatic(newStatic) {
+    if(newStatic > 7 || newStatic < 0) {
+        return;
+    }
+
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
+
+    currentStaticThreshold = staticSliderToInches('' + newStatic);
+    let threshold = document.getElementById('static-threshold');
+    let slider = document.getElementById('static-threshold-slider-id');
+    let meanLabel = document.getElementById('mean-label');
+    let thresholdImage = document.getElementById('threshold-image');
+
+    threshold.innerText = currentStaticThreshold.toFixed(2);
+    slider.value = newStatic;
+    meanLabel.textContent = `Days Exceeding ${currentStaticThreshold.toFixed(2)} Inches:`;
+    thresholdImage.src = 'resources/' + staticThresholdImages[newStatic];
+
 }
 
 function updateMean(newSigma) {
@@ -1959,6 +2041,15 @@ document.getElementById('option-gefs').addEventListener('click', function() {
     updateModel('GEFS');
 });
 
+// Threshold Type Selection
+document.getElementById('option-percentile').addEventListener('click', function() {
+    updateThresholdType('percentile');
+});
+document.getElementById('option-static').addEventListener('click', function() {
+    updateThresholdType('static');
+    updateStatic(parseInt(document.getElementById('static-threshold-slider-id').value));
+});
+
 // Chart Type Selection
 document.getElementById('option-line').addEventListener('click', function() {
     updateChart('line', false);
@@ -2057,9 +2148,21 @@ document.getElementById('threshold-down').addEventListener('click', function() {
     updateMean(currentSigma - .5);
 });
 
-// Sigma Slider
+// Percentile Slider
 document.getElementById('threshold-slider-id').addEventListener('input', function() {
     updateMean(this.value);
+});
+
+// Static Slider
+document.getElementById('static-threshold-slider-id').addEventListener('input', function() {
+    updateStatic(this.value);
+});
+// Static Threshold Buttons
+document.getElementById('static-threshold-up').addEventListener('click', function() {
+    updateStatic(parseInt(document.getElementById('static-threshold-slider-id').value) + 1);
+});
+document.getElementById('static-threshold-down').addEventListener('click', function() {
+    updateStatic(parseInt(document.getElementById('static-threshold-slider-id').value) - 1);
 });
 
 // Control Panel Lock
