@@ -396,12 +396,21 @@
             <br>
 
             <h3><b style="color:#e0f42b">Version 2.3.2</b></h3>
-            <p>This version adds a toggle so that the user can choose between using a static threshold as a metric, or percentiles. The static threshold uses inches of rain as a metric with a range value that includes: .25 inch, 
-                .50 inch, .75 inch, 1 inch, 1.50 inches, 2 inches, 3 inches, and 4 inches.
+            <p>Based upon helpful feedback, we’ve made an important upgrade of the Landfalling Event Atmospheric River Neural Network LEARN² application to V2.3.2. Up to this point, 
+                LEARN2 presented percentile exceedance likelihoods. This product can be confusing to many—it can show large values in both high- and low-value rain areas 
+                (because it’s “easy” to exceed a low climatological threshold), and low likelihoods in high-value rainy areas (because it’s “hard to exceed a high climatological background threshold).
+                While the data may be correct, the display is counterintuitive. Rather than solely predicting percentile exceedances (of 24-hour accumulated precipitation, 
+                this version update adds the additional capability to view predicted precipitation at fixed thresholds—from 0.25” to 4.0”. This is a naturally intuitive field to interpret. </p>
+                <p>
+                As you can see below for the 24-hour period ending March 15 (12X) at the 3” threshold, the maxima are in expected locations (e.g., mountain slopes). The right image shows
+                 the number of days in the combined PRISM, NCEP/GEFS, and ECMWF/EPS training data set where accumulated precipitation exceeded 3” in 24 hours—it is sparse at these higher fixed thresholds, 
+                 and that very sparseness was a machine learning training challenge we have successfully overcome. Version 2.3.2 adds a toggle so that the user can choose between using a static threshold 
+                 as a metric, or percentiles. The static threshold uses inches of rain as a metric with a range value that includes: .25 inches, .50 inches, .75 inches, 1 inch, 1.50 inches, 2 inches, 3 inches, 
+                 and 4 inches. The resolution shown here is 0.25 degrees.
             </p>
-           
+           <img width='100%' alt = 'version 2.3.2 static threshold example' src="resources/version232.png">
             <br>
-           
+           <br>
             <h3><b style="color:#e0f42b">Version 3.0</b></h3>
             <p>This version is under currently development. It seeks to optimize weighting of the four models
                  (NCEP GEFS, ECMWF EPS, convolutional neural network, and densely connected neural network) using a scheme that balances 
