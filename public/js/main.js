@@ -1455,9 +1455,12 @@ function updateTheme(isChecked, isInitializing = false) {
     let ctrlOff = document.getElementById('init');
     let forecastDay = document.getElementById('forecast-day');
     let daySlider = document.getElementById('day-slider-id');
+    let staticThreshold = document.getElementById('static-threshold')
     let thresholdSlider = document.getElementById('threshold-slider-id');
+    let staticThresholdSlider = document.getElementById('static-threshold-slider-id');
     let modelButton = document.getElementById('button-model-dropdown');
     let thresholdButton = document.getElementById('threshold');
+    let staticThresholdButton = document.getElementById('static-threshold');
     let userManual = document.getElementById('users-manual');
     let previewCheckbox = document.getElementById('preview-switch-background-id');
     let buttonHighRes = document.getElementById('button-high-res');
@@ -1483,6 +1486,7 @@ function updateTheme(isChecked, isInitializing = false) {
     let calendarYear = document.getElementById('button-year');
     let calendarSubmit = document.getElementById('calendar-submit');
     let calendarReset = document.getElementById('calendar-reset');
+    let percentileDropdown = document.getElementById('button-percentile-dropdown');
 
     if (isChecked) {
         // Set Dark Theme
@@ -1498,8 +1502,12 @@ function updateTheme(isChecked, isInitializing = false) {
         forecastDay.style.backgroundColor = '#0d6efd';
         forecastDay.style.borderColor = '#0d6efd';
         thresholdButton.style.backgroundColor = '#0d6efd';
+        staticThresholdButton.style.backgroundColor = '#0d6efd';
+        staticThresholdButton.style.borderColor = '#0d6efd';
         userManual.style.backgroundColor = '#0d6efd';
         modelButton.style.backgroundColor = '#0d6efd';
+        percentileDropdown.style.backgroundColor = '#0d6efd';
+        percentileDropdown.style.borderColor = '#0d6efd';
         chartType.style.backgroundColor = '#0d6efd';
         buttonHighRes.style.backgroundColor = currentResolution === 'high' ? '#0d6efd' : '#212121';
         buttonHighRes.style.borderColor = '#0d6efd'
@@ -1507,6 +1515,8 @@ function updateTheme(isChecked, isInitializing = false) {
         buttonLowRes.style.borderColor = '#0d6efd'
         daySlider.style.accentColor = '#0d6efd';
         thresholdSlider.style.accentColor = '#0d6efd';
+        staticThreshold.style.accentColor = '#0d6efd';
+        staticThresholdSlider.style.accentColor = '#0d6efd';
         modelButton.style.borderColor = '#0a53be';
         previewCheckbox.style.backgroundColor = previewsEnabled ? previewCheckbox.style.backgroundColor = '#0d6efd' : previewCheckbox.style.backgroundColor = '#393939';
         // mappedValues.style.backgroundColor = '#212121';
@@ -1572,7 +1582,9 @@ function updateTheme(isChecked, isInitializing = false) {
         modelButton.style.backgroundColor = '#77c743';
         modelButton.style.borderColor = '#77c743';
         thresholdButton.style.backgroundColor = '#77c743';
-        thresholdButton.style.border = '#77c743';
+        thresholdButton.style.borderColor = '#77c743';
+        staticThresholdButton.style.backgroundColor = '#77c743';
+        staticThresholdButton.style.borderColor = '#77c743';
         buttonHighRes.style.backgroundColor = currentResolution === 'high' ? '#77c743' : '#6c757d';
         buttonHighRes.style.borderColor = '#77c743';
         buttonLowRes.style.backgroundColor = currentResolution  === 'low' ? '#77c743' : '#6c757d';
@@ -1584,6 +1596,8 @@ function updateTheme(isChecked, isInitializing = false) {
         mapSection.style.backgroundColor = '#efefef';
         daySlider.style.accentColor = '#569630';
         thresholdSlider.style.accentColor = '#569630';
+        staticThreshold.style.accentColor = '#569630';
+        staticThresholdSlider.style.accentColor = '#569630';
         pageBody.style.backgroundColor = '#bbd6b5';
         pageBody.style.color = 'black';
         previewCheckbox.style.backgroundColor = previewsEnabled ? previewCheckbox.style.backgroundColor = '#77c743' : previewCheckbox.style.backgroundColor = '#393939';
@@ -1623,7 +1637,8 @@ function updateTheme(isChecked, isInitializing = false) {
         calendarSubmit.style.borderColor = '#4b9929b3';
         calendarReset.style.backgroundColor = '#4b9929b3';
         calendarReset.style.borderColor = '#4b9929b3';
-        
+        percentileDropdown.style.backgroundColor = '#4b9929b3';
+        percentileDropdown.style.borderColor = '#4b9929b3';
 
         dayButtons.forEach((dayButtons) => {
             dayButtons.style.borderColor = "#77c743";
