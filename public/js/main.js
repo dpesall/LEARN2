@@ -1554,7 +1554,7 @@ function updateTheme(isChecked, isInitializing = false) {
         calendarReset.style.backgroundColor = '#0d6efd';
         calendarReset.style.borderColor = '#0d6efd';
         feedbackCoordinates.style.color = 'white';
-        chartTip.style.backgroundColor = '#0c6efda3'
+        chartTip.style.backgroundColor = '#0d6efd'
         dayButtons.forEach((dayButtons) => {
             dayButtons.style.borderColor = "#0a53be";
             dayButtons.classList.remove('light-hover');
