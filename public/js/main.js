@@ -1682,7 +1682,7 @@ function quickUpdateFromCache(cache) {
     }
 }
 
-let thresholdType = 'percentile';
+let thresholdType = 'static';
 function updateThresholdType(type) {
     if(type === thresholdType) {
         return;
