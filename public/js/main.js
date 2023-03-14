@@ -1677,7 +1677,7 @@ function quickUpdateFromCache(cache) {
     if(thresholdType === 'percentile') {
         img.src = cache[forecastDayIndex - 1 + (10 * currentSigma * 2)];
     }
-    if(thresholdType === 'percentile') {
+    if(thresholdType === 'static') {
         img.src = cache[forecastDayIndex - 1 + (10 * staticThresholdIndex)];
     }
 }
@@ -1835,7 +1835,13 @@ function updateDay(delta, modifyForecast, shouldUpdateImages = true) {
         currentDate2.setDate(currentDate2.getDate() + dayOffset);
         updateForecastSlider(dayOffset);
         forecastDayIndex = dayOffset;
-        let offset = (10 * (currentSigma * 2)) + (forecastDayIndex - 1);
+        let offset = 0;
+        if(thresholdType === 'percentile') {
+            offset = (10 * (currentSigma * 2)) + (forecastDayIndex - 1);
+        }
+        if(thresholdType === 'static') {
+            offset = (10 * staticThresholdIndex) + (forecastDayIndex - 1);
+        }
         mapArray = allCSVArray[offset];
         if(shouldUpdateImages) {
             updateImages();
