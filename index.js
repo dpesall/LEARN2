@@ -46,7 +46,7 @@ async function makePromiseSet(fileNames, functionName, start) {
 
 let imageURLS = Array(BUFFER_SIZE);
 function gatherURL(fileNames, _callback) {
-    for(let i = 0; i < BUFFER_SIZE; i++) {
+    for(let i = 0; i < fileNames.length; i++) {
         imageURLS[i] = s3.getSignedUrl('getObject', {
             Bucket: bucket,
             Key: fileNames[i],
@@ -58,10 +58,10 @@ function gatherURL(fileNames, _callback) {
 
 function gatherCSV(csvNames, _callback) {
     let csvStreams = [];
-    for(let i = 0; i < BUFFER_SIZE; i++) {
+    for(let i = 0; i < csvNames.length; i++) {
         let fileData = [];
         csvStreams[i] = s3.getObject({Bucket: bucket, Key: csvNames[i]}).createReadStream().on('error', err => {
-            // console.log('error');
+            // console.log(err);
         }).on('data', data => {
             // console.log('success');
         });
@@ -70,7 +70,7 @@ function gatherCSV(csvNames, _callback) {
                 fileData.push(data);
             }).on('end', count => {
                 csvData[i] = fileData;
-                if(i === (BUFFER_SIZE - 1)) {
+                if(i === (csvNames.length - 1)) {
                     _callback();
                 }
         });
@@ -80,33 +80,71 @@ function gatherCSV(csvNames, _callback) {
 app.get('/aws2', async (req, res) => {
     let fileBase = req.query.file;
     let csvNames = [];
-    for(let j = 0; j < 7; j++) {
-        let percentile = '';
-        switch(j) {
-            case 0:
-                percentile = '_50th.csv';
-                break;
-            case 1:
-                percentile = '_60th.csv';
-                break;
-            case 2:
-                percentile = '_70th.csv';
-                break;
-            case 3:
-                percentile = '_80th.csv';
-                break;
-            case 4:
-                percentile = '_90th.csv';
-                break;
-            case 5:
-                percentile = '_95th.csv';
-                break;
-            case 6:
-                percentile = '_99th.csv'
-                break;
+    let thresholdType = req.query.threshold;
+    if(thresholdType === 'percentile') {
+        for(let j = 0; j < 7; j++) {
+            let percentile = '';
+            switch(j) {
+                case 0:
+                    percentile = '_50th.csv';
+                    break;
+                case 1:
+                    percentile = '_60th.csv';
+                    break;
+                case 2:
+                    percentile = '_70th.csv';
+                    break;
+                case 3:
+                    percentile = '_80th.csv';
+                    break;
+                case 4:
+                    percentile = '_90th.csv';
+                    break;
+                case 5:
+                    percentile = '_95th.csv';
+                    break;
+                case 6:
+                    percentile = '_99th.csv'
+                    break;
+            }
+            for(let i = 1; i <= 10; i++) {
+                csvNames.push(fileBase + i + percentile);
+            }
         }
-        for(let i = 1; i <= 10; i++) {
-            csvNames.push(fileBase + i + percentile);
+    }
+    if(thresholdType === 'static') {
+        for(let j = 0; j < 8; j++) {
+            let suffix = '';
+            switch(j) {
+                case 0:
+                    suffix = '_0.25_inches.csv';
+                    break;
+                case 1:
+                    suffix = '_00.5_inches.csv';
+                    break;
+                case 2:
+                    suffix = '_0.75_inches.csv';
+                    break;
+                case 3:
+                    suffix = '_01.0_inches.csv';
+                    break;
+                case 4:
+                    suffix = '_01.5_inches.csv';
+                    break;
+                case 5:
+                    suffix = '_02.0_inches.csv';
+                    break;
+                case 6:
+                    suffix = '_03.0_inches.csv';
+                    break;
+                case 7:
+                    suffix = '_04.0_inches.csv';
+                    break;
+            }
+            for(let i = 1; i <= 10; i++) {
+                csvNames.push(fileBase + i + suffix);
+            }
+            //console.log(fileBase + '1' + suffix);
         }
     }
     gatherCSV(csvNames, function() {
@@ -226,43 +264,81 @@ app.get('/feedback', async (req, res) => {
 let standard = true;
 app.get('/aws', async (req, res) => {
     let rootName = req.query.file;
+    let thresholdType = req.query.threshold;
     standard = req.query.standard === 'true';
     let fileNames = [];
-    for(let j = 0; j < 7; j++) {
-        let percentile = '';
-        switch(j) {
-            case 0:
-                percentile = '_50th.png';
-                break;
-            case 1:
-                percentile = '_60th.png';
-                break;
-            case 2:
-                percentile = '_70th.png';
-                break;
-            case 3:
-                percentile = '_80th.png';
-                break;
-            case 4:
-                percentile = '_90th.png';
-                break;
-            case 5:
-                percentile = '_95th.png';
-                break;
-            case 6:
-                percentile = '_99th.png';
-                break;
+    if(thresholdType === 'percentile') {
+        for(let j = 0; j < 7; j++) {
+            let percentile = '';
+            switch(j) {
+                case 0:
+                    percentile = '_50th.png';
+                    break;
+                case 1:
+                    percentile = '_60th.png';
+                    break;
+                case 2:
+                    percentile = '_70th.png';
+                    break;
+                case 3:
+                    percentile = '_80th.png';
+                    break;
+                case 4:
+                    percentile = '_90th.png';
+                    break;
+                case 5:
+                    percentile = '_95th.png';
+                    break;
+                case 6:
+                    percentile = '_99th.png';
+                    break;
+            }
+            if(j === 6 && !standard) {
+                for(let i = 1; i <= 10; i++) {
+                    let newName = rootName + i + '_99th_categories.png';
+                    fileNames.push(newName);
+                    //console.log(rootName + i + '_categories' + percentile);
+                }
+            } else {
+                for(let i = 1; i <= 10; i++) {
+                    fileNames.push(rootName + i + percentile);
+                }
+            }
         }
-        if(j === 6 && !standard) {
-            for(let i = 1; i <= 10; i++) {
-                let newName = rootName + i + '_99th_categories.png';
-                fileNames.push(newName);
-                //console.log(rootName + i + '_categories' + percentile);
+    }
+    if(thresholdType === 'static') {
+        for(let j = 0; j < 8; j++) {
+            let suffix = '';
+            switch(j) {
+                case 0:
+                    suffix = '_0.25_inches.png';
+                    break;
+                case 1:
+                    suffix = '_00.5_inches.png';
+                    break;
+                case 2:
+                    suffix = '_0.75_inches.png';
+                    break;
+                case 3:
+                    suffix = '_01.0_inches.png';
+                    break;
+                case 4:
+                    suffix = '_01.5_inches.png';
+                    break;
+                case 5:
+                    suffix = '_02.0_inches.png';
+                    break;
+                case 6:
+                    suffix = '_03.0_inches.png';
+                    break;
+                case 7:
+                    suffix = '_04.0_inches.png';
+                    break;
             }
-        } else {
             for(let i = 1; i <= 10; i++) {
-                fileNames.push(rootName + i + percentile);
+                fileNames.push(rootName + i + suffix);
             }
+            //console.log(rootName + '1' + suffix);
         }
     }
     gatherURL(fileNames, function() {

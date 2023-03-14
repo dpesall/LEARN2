@@ -348,7 +348,7 @@ function getChartArrays(x, y) {
                 }
             }
         }
-        for(let i = 0; i < 7; i++) {
+        for(let i = 0; i < (thresholdType === 'percentile' ? 7 : 8); i++) {
             tempArray.push(
                 [
                     (allCSVArray[(10 * i)][y][x] * 100).toFixed(0),
@@ -435,7 +435,8 @@ const fillColors = [
     'rgb(0,255,64)',
     'rgb(186,255,0)',
     'rgb(255,111,0)',
-    'rgb(255,0,0)'
+    'rgb(255,0,0)',
+    'rgb(84,0,90)'
 ]
 
 function getFill(index) {
@@ -450,14 +451,20 @@ function getFill(index) {
 }
 
 function getLegendLabel(index, x ,y) {
-    let label = csvCache[index + resolutionOffset()][y][x];
-    let percentile = 50 + (index * 10);
-    if(index === 5) {
-        percentile = 95;
-    } else if(index === 6) {
-        percentile = 99;
+    let label = '';
+    if(thresholdType === 'percentile') {
+        label = csvCache[index + resolutionOffset()][y][x];
+        let percentile = 50 + (index * 10);
+        if(index === 5) {
+            percentile = 95;
+        } else if(index === 6) {
+            percentile = 99;
+        }
+        label += ' (' + percentile + 'th percentile)';
     }
-    label += ' (' + percentile + 'th percentile)';
+    if(thresholdType === 'static') {
+        label = '' + staticSliderToInches('' + index) + ' inches';
+    }
     return label;
 }
 
@@ -627,6 +634,19 @@ function showTimeSeries(x, y, res, fromClicked = false) {
         ],
     };
 
+    if(thresholdType === 'static') {
+        chartData.datasets.push(
+            {
+                label: getLegendLabel(7, x, y),
+                backgroundColor: 'rgb(84,0,90)',
+                borderColor: 'rgb(84,0,90)',
+                borderWidth: 1.5,
+                data: chartArrays[7],
+                fill: getFill(7)
+            }
+        );
+    }
+
     savedTableData = [
         mapArray[y][x] < 0 ? '--' : (100 * mapArray[y][x]).toFixed(0) + '%',
         csvCache[(currentSigma * 2) + resolutionOffset()][y][x] < 0 ? '--' : csvCache[(currentSigma * 2) + resolutionOffset()][y][x] + ' in',
@@ -778,7 +798,9 @@ function updateCanvas(x, y) {
     let ctx2 = canvasThreshold.getContext('2d');
 
     paintCanvas(x, y, ctx, canvasForecast);
-    paintCanvas(x, y, ctx2, canvasThreshold);
+    if(thresholdType === 'percentile') {
+        paintCanvas(x, y, ctx2, canvasThreshold);
+    }
 }
 
 function updateValueBox(x, y, res) {
@@ -870,47 +892,86 @@ function loadCSVFile(fileName, index) {
     });
 }
 
+function getEmptyLegendLabel(index) {
+    switch(index) {
+        case 0:
+            return thresholdType === 'percentile' ? '50th Percentile' : staticSliderToInches('' + index) + ' inches';
+        case 1:
+            return thresholdType === 'percentile' ? '60th Percentile' : staticSliderToInches('' + index) + ' inches';
+        case 2:
+            return thresholdType === 'percentile' ? '70th Percentile' : staticSliderToInches('' + index) + ' inches';
+        case 3:
+            return thresholdType === 'percentile' ? '80th Percentile' : staticSliderToInches('' + index) + ' inches';
+        case 4:
+            return thresholdType === 'percentile' ? '90th Percentile' : staticSliderToInches('' + index) + ' inches';
+        case 5:
+            return thresholdType === 'percentile' ? '95th Percentile' : staticSliderToInches('' + index) + ' inches';
+        case 6:
+            return thresholdType === 'percentile' ? '99th Percentile' : staticSliderToInches('' + index) + ' inches';
+        case 7:
+            return staticSliderToInches('' + index) + ' inches';
+    }
+}
+
 function cleanTimeSeries() {
     const chartData = {
         labels: forecastLabels,
         datasets: [{
-            label: '50th Percentile',
-            backgroundColor: 'rgb(0,197,255)',
-            borderColor: 'rgb(0,196,255)',
-            borderWidth: 1.5,
-        },
+                label: getEmptyLegendLabel(0),
+                backgroundColor: 'rgb(0,64,255)',
+                borderColor: 'rgb(0,64,255)',
+                borderWidth: 1.5,
+            },
+
             {
-                label: '60th Percentile',
+                label: getEmptyLegendLabel(1),
+                backgroundColor: 'rgb(0,197,255)',
+                borderColor: 'rgb(0,196,255)',
+                borderWidth: 1.5,
+            },
+            {
+                label: getEmptyLegendLabel(2),
                 backgroundColor: 'rgb(0,255,64)',
                 borderColor: 'rgb(0,255,64)',
                 borderWidth: 1.5,
             },
             {
-                label: '70th Percentile',
+                label: getEmptyLegendLabel(3),
                 backgroundColor: 'rgb(186,255,0)',
                 borderColor: 'rgb(186,255,0)',
                 borderWidth: 1.5,
             },
             {
-                label: '80th Percentile',
+                label: getEmptyLegendLabel(4),
                 backgroundColor: 'rgb(255,111,0)',
                 borderColor: 'rgb(255,111,0)',
                 borderWidth: 1.5,
             },
             {
-                label: '90th Percentile',
+                label: getEmptyLegendLabel(5),
                 backgroundColor: 'rgb(255,0,0)',
                 borderColor: 'rgb(255,0,0)',
                 borderWidth: 1.5,
             },
             {
-                label: '95th Percentile',
+                label: getEmptyLegendLabel(6),
                 backgroundColor: 'rgb(238,0,255)',
                 borderColor: 'rgb(238,0,255)',
                 borderWidth: 1.5,
-            },
-        ],
+            }
+        ]
     };
+
+    if(thresholdType === 'static') {
+        chartData.datasets.push(
+            {
+                label: getEmptyLegendLabel(7),
+                backgroundColor: 'rgb(84,0,90)',
+                borderColor: 'rgb(84,0,90)',
+                borderWidth: 1.5,
+            }
+        );
+    }
 
     const config = {
         type: chartType,
@@ -998,17 +1059,25 @@ function readCSV(shouldSet = false) {
         prefix: getPrefix(),
         suffix: sigmaToPercentile(true),
         model: getModelPrefix(),
-        offset: getDateOffset()
+        offset: getDateOffset(),
+        threshold: thresholdType
     }
     $.get(window.location.href + 'aws3', param, function(date) {
         let csvParam = {
             file: param.prefix + getModelPrefix() + date + '_',
-            suffix: param.suffix
+            suffix: param.suffix,
+            threshold: thresholdType
         };
         updateDayLabel(date);
         $.get(window.location.href + 'aws2', csvParam, function(data) {
             allCSVArray = data;
-            let offset = (10 * (currentSigma * 2)) + (forecastDayIndex - 1);
+            let offset = 0;
+            if(thresholdType === 'percentile') {
+                offset = (10 * (currentSigma * 2)) + (forecastDayIndex - 1);
+            }
+            if(thresholdType === 'static') {
+                offset = (10 * staticThresholdIndex) + (forecastDayIndex - 1);
+            }
             mapArray = data[offset];
             loadAllCSVFiles(function() {
                 updateDay(0, false, false);
@@ -1188,21 +1257,23 @@ function retrieveImages(_callback = () => {}) {
         prefix: getPrefix(),
         suffix: sigmaToPercentile(true),
         model: getModelPrefix(),
-        offset: getDateOffset()
+        offset: getDateOffset(),
+        threshold: thresholdType
     }
-    img.src = (currentSigma === 3 && !standardMapStyle) ? 'resources/blankForecast2.png' : 'resources/blankForecast.png';
+    img.src = (currentSigma === 3 && !standardMapStyle && thresholdType === 'percentile') ? 'resources/blankForecast2.png' : 'resources/blankForecast.png';
     $.get(window.location.href + 'aws3', param, function(date) {
         let imgParam = {
             file: param.prefix + getModelPrefix() + date + '_',
             suffix: param.suffix,
-            standard: standardMapStyle
+            standard: standardMapStyle,
+            threshold: thresholdType
         };
         currentLabelDate = date;
         updateDayLabel(date);
         initializeDates(date);
         $.get(window.location.href + 'aws', imgParam, function(data) {
             forecastImageCache = [];
-            for(let i = 0; i < BUFFER_SIZE; i++) {
+            for(let i = 0; i < BUFFER_SIZE + (thresholdType === 'percentile' ? 0 : 10); i++) {
                 forecastImageCache[i] = data[i];
             }
             if(spinner == null) {
@@ -1225,7 +1296,12 @@ function retrieveImages(_callback = () => {}) {
                     gefsCache = forecastImageCache;
                     break;
             }
-            img.src = forecastImageCache[(10 * currentSigma * 2) + (forecastDayIndex - 1)];
+            if(thresholdType === 'percentile') {
+                img.src = forecastImageCache[(10 * currentSigma * 2) + (forecastDayIndex - 1)];
+            }
+            if(thresholdType === 'static') {
+                img.src = forecastImageCache[(10 * staticThresholdIndex) + (forecastDayIndex - 1)];
+            }
             setPreviewImages(forecastImageCache);
             if(!isTodayStored) {
                 localStorage.setItem('todayData', forecastImageCache[10]);
@@ -1261,7 +1337,12 @@ function setPreviewImages(cache) {
     if(cache.length > 0) {
         for(let i = 1; i <= 10; i++) {
             let img = document.getElementById('preview-image-' + i);
-            threadPreviewImage(cache, img, i - 1 + (10 * currentSigma * 2));
+            if(thresholdType === 'percentile') {
+                threadPreviewImage(cache, img, i - 1 + (10 * currentSigma * 2));
+            }
+            if(thresholdType === 'static') {
+                threadPreviewImage(cache, img, i - 1 + (10 * staticThresholdIndex));
+            }
             if(i === 10) {
                 let modelButton = document.getElementById('button-model-dropdown');
                 let levelsButton = document.getElementById('button-99-toggle');
@@ -1283,7 +1364,12 @@ function setForecastImage(isInitializing) {
     spinner.style.display = 'block';
     let img = document.getElementById('forecast-image');
     setPreviewImages(forecastImageCache);
-    img.src = forecastImageCache[forecastDayIndex - 1 + (10 * currentSigma * 2)];
+    if(thresholdType === 'percentile') {
+        img.src = forecastImageCache[forecastDayIndex - 1 + (10 * currentSigma * 2)];
+    }
+    if(thresholdType === 'static') {
+        img.src = forecastImageCache[forecastDayIndex - 1 + (10 * staticThresholdIndex)];
+    }
     spinner.style.display = 'none';
 }
 
@@ -1573,7 +1659,12 @@ function toggleDaySelection(isChecked) {
 
 function quickUpdateFromCache(cache) {
     let img = document.getElementById('forecast-image');
-    img.src = cache[forecastDayIndex - 1 + (10 * currentSigma * 2)];
+    if(thresholdType === 'percentile') {
+        img.src = cache[forecastDayIndex - 1 + (10 * currentSigma * 2)];
+    }
+    if(thresholdType === 'percentile') {
+        img.src = cache[forecastDayIndex - 1 + (10 * staticThresholdIndex)];
+    }
 }
 
 let thresholdType = 'percentile';
@@ -1585,19 +1676,33 @@ function updateThresholdType(type) {
     let typeButton = document.getElementById('button-percentile-dropdown');
     let percentileSection = document.getElementById('percentile-threshold-row-id');
     let staticSection = document.getElementById('static-threshold-row-id');
+    let element = document.getElementById('map-style-id');
+    let thresholdValueLine = document.getElementById('threshold-value-line-id');
+    let thresholdValueDisplay = document.getElementById('threshold-value-id');
     switch(type) {
         case 'percentile':
             typeButton.textContent = 'Percentile';
             percentileSection.style.display = 'flex';
             staticSection.style.display = 'none';
+            thresholdValueLine.style.display = thresholdValueDisplay.style.display = 'block'
+            if(parseFloat(currentSigma) === 3) {
+                element.style.display = 'flex';
+            }
             updateThresholdImage();
             break;
         case 'static':
-            typeButton.textContent = 'Static';
+            typeButton.textContent = 'Fixed';
             percentileSection.style.display = 'none';
             staticSection.style.display = 'flex';
+            element.style.display = 'none';
+            thresholdValueLine.style.display = thresholdValueDisplay.style.display = 'none'
             break;
     }
+    emptyCaches(() => {
+        retrieveImages();
+        updateModel(modelType);
+    });
+
 }
 
 function updateModel(type) {
@@ -1748,10 +1853,13 @@ let staticThresholdImages = [
     'High_res_fixed_3_0.25.png',
     'High_res_fixed_4_0.25.png',
 ]
+let staticThresholdIndex = 1;
 function updateStatic(newStatic) {
     if(newStatic > 7 || newStatic < 0) {
         return;
     }
+
+    staticThresholdIndex = newStatic;
 
     if(feedbackViewable) {
         populateIssueBoxes();
@@ -1768,6 +1876,7 @@ function updateStatic(newStatic) {
     meanLabel.textContent = `Days Exceeding ${currentStaticThreshold.toFixed(2)} Inches:`;
     thresholdImage.src = 'resources/' + staticThresholdImages[newStatic];
 
+    updateImages()
 }
 
 function updateMean(newSigma) {
@@ -1822,7 +1931,7 @@ function getFramePause() {
 
 function setImagePlaceholder(_callback) {
     let image = document.getElementById('forecast-image');
-    let shouldUseModifiedSize = currentSigma === 3 && !standardMapStyle;
+    let shouldUseModifiedSize = currentSigma === 3 && !standardMapStyle && thresholdType === 'percentile';
 
     image.src = shouldUseModifiedSize ? 'resources/blankForecast2.png' : 'resources/blankForecast.png';
 
@@ -1938,7 +2047,7 @@ function updateThresholdImage() {
     thresholdImage.src = newThresholdURL;
 }
 
-function emptyCaches() {
+function emptyCaches(_callback) {
     votingCache = [];
     convolutionalCache = [];
     denseCache = [];
@@ -1953,6 +2062,10 @@ function emptyCaches() {
     hasSelectedCoordinate = false;
 
     cleanTimeSeries();
+
+    if(_callback !== undefined) {
+        _callback();
+    }
 }
 
 function setMapStyle(type) {
@@ -1962,7 +2075,7 @@ function setMapStyle(type) {
         element.classList.add('disabled');
     }, 0);
 
-    standardMapStyle = type === '20 Levels';
+    standardMapStyle = type === '20 Levels' || thresholdType === 'static';
 
     let image = document.getElementById('forecast-image');
     image.src = standardMapStyle ? 'resources/blankForecast2.png' : 'resources/blankForecast2.png';
