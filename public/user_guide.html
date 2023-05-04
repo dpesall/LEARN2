@@ -412,12 +412,10 @@
             <br>
            <br>
             <h3><b style="color:#e0f42b">Version 3.0</b></h3>
-            <p>This version is under currently development. It seeks to optimize weighting of the four models
-                 (NCEP GEFS, ECMWF EPS, convolutional neural network, and densely connected neural network) using a scheme that balances 
-                 the model contributions (confidence-weighted votes) against the skill that they add—as a function of prediction day (1-10)
-                  and threshold (50% to 99%) percentile. We are seeing some modest additional skill, especially at the highest rainfall categories 
-                  and in the near-term predictions (Days 1-3). 
-                  <!-- Implementation is anticipated prior to 31 January 2022. -->
+            <p>This version optimizes weighting of the four models (NCEP GEFS, ECMWF EPS, convolutional neural network, and densely connected neural network) using an area-wide regression scheme 
+                against the PRISM ground truth dataset that balances the model contributions (confidence-weighted votes) against the skill that they add—as a function of prediction day (1-10) and fixed thresholds. The version 
+                also includes an augmentation step for the training dataset (by replicating those days with the highest precipitation amounts) that seeks to better balance the data above and below each of the higher fixed thresholds 
+                (2”, 3”, and 4”). This achieves some modest additional skill, especially at the highest rainfall categories.
                 </p>
 
             <br>
