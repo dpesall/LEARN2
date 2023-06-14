@@ -77,7 +77,7 @@ function gatherCSV(csvNames, _callback) {
     }
 }
 
-app.get('/aws2', async (req, res) => {
+app.get('/retrieve-csv-data', async (req, res) => {
     let fileBase = req.query.file;
     let csvNames = [];
     let thresholdType = req.query.threshold;
@@ -179,13 +179,8 @@ function mostRecentAvailableDate(dateObject, dateOffset, prefix, suffix, _callba
             dateObject.setDate(dateObject.getDate() - 1);
             mostRecentAvailableDate(dateObject, dateOffset, prefix, suffix, _callback);
         } else {
-            if(dateOffset > 0) {
-                dateObject.setDate(dateObject.getDate() - 1);
-                mostRecentAvailableDate(dateObject, dateOffset - 1, prefix, suffix, _callback);
-            } else {
-                recentDate = date;
-                _callback();
-            }
+            recentDate = date;
+            _callback();
         }
     });
 }
@@ -194,7 +189,7 @@ function pad(n) {
     return (n < 10) ? ('0' + n) : n;
 }
 
-app.get('/aws4', async (req, res) => {
+app.get('/data-exists-at-date', async (req, res) => {
     let prefix = req.query.prefix + req.query.model;
     let suffix = '_1_' + req.query.suffix + '.png';
     let keyName = prefix + req.query.date + suffix;
@@ -215,12 +210,14 @@ app.get('/aws4', async (req, res) => {
     res.send(exists);
 });
 
-app.get('/aws3', async (req, res) => {
+app.get('/most-recent-available-date', async (req, res) => {
     let dateObject = new Date();
     let dateOffset = parseInt(req.query.offset);
+    let dateObjectAdjusted = dateObject;
+    dateObjectAdjusted.setDate(dateObjectAdjusted.getDate() - dateOffset);
     let prefix = req.query.prefix + req.query.model;
     let suffix = '_1_' + req.query.suffix + '.png';
-    mostRecentAvailableDate(dateObject, dateOffset, prefix, suffix, function() {
+    mostRecentAvailableDate(dateObjectAdjusted, dateOffset, prefix, suffix, function() {
         res.send(recentDate);
     });
 });
@@ -262,7 +259,7 @@ app.get('/feedback', async (req, res) => {
 });
 
 let standard = true;
-app.get('/aws', async (req, res) => {
+app.get('/retrieve-img-urls', async (req, res) => {
     let rootName = req.query.file;
     let thresholdType = req.query.threshold;
     standard = req.query.standard === 'true';

@@ -62,11 +62,13 @@ let canMoveDays = true;
 let hasSelectedCoordinate = false;
 let feedbackViewable = false;
 let standardMapStyle = true;
+let initialDateLoaded = false;
 
 let timeSeriesCanvas = null;
 let timeSeriesCanvas2 = null;
 let savedX = null;
 let savedY = null;
+let mostRecentDefaultDate = null;
 
 let modelType = 'Voting';
 let chartType = 'line';
@@ -145,11 +147,29 @@ function resetDateDropdowns() {
     let monthButton = document.getElementById('button-month');
     let yearButton = document.getElementById('button-year');
 
-    dayButton.innerHTML = currentDate.getDate().toString();
-    monthButton.innerHTML = monthIntToString(currentDate.getMonth() + 1);
-    yearButton.innerHTML = currentDate.getFullYear().toString();
+    if(mostRecentDefaultDate != null) {
+        dayButton.innerHTML = parseDate(mostRecentDefaultDate, 'day', '-').toString();
+        monthButton.innerHTML = monthIntToString(parseDate(mostRecentDefaultDate, 'month', '-'));
+        yearButton.innerHTML = parseDate(mostRecentDefaultDate, 'year', '-').toString();
+        submitCalendar();
+    } else {
+        dayButton.innerHTML = currentDate.getDate().toString();
+        monthButton.innerHTML = monthIntToString(currentDate.getMonth() + 1);
+        yearButton.innerHTML = currentDate.getFullYear().toString();
+    }
+}
 
-    submitCalendar();
+// Retrieve parsed portions of dates in YYYY-MM-DD or YYYY/MM/DD formats
+function parseDate(date, period, delimiter) {
+    let dateArray = date.split(delimiter);
+    switch(period) {
+        case 'day':
+            return parseInt(dateArray[2]);
+        case 'month':
+            return parseInt(dateArray[1]);
+        case 'year':
+            return parseInt(dateArray[0]);
+    }
 }
 
 function monthIntToString(index) {
@@ -1062,14 +1082,14 @@ function readCSV(shouldSet = false) {
         offset: getDateOffset(),
         threshold: thresholdType
     }
-    $.get(window.location.href + 'aws3', param, function(date) {
+    $.get(window.location.href + 'most-recent-available-date', param, function(date) {
         let csvParam = {
             file: param.prefix + getModelPrefix() + date + '_',
             suffix: param.suffix,
             threshold: thresholdType
         };
         updateDayLabel(date);
-        $.get(window.location.href + 'aws2', csvParam, function(data) {
+        $.get(window.location.href + 'retrieve-csv-data', csvParam, function(data) {
             allCSVArray = data;
             let offset = 0;
             if(thresholdType === 'percentile') {
@@ -1261,17 +1281,23 @@ function retrieveImages(_callback = () => {}) {
         threshold: thresholdType
     }
     img.src = (currentSigma === 3 && !standardMapStyle && thresholdType === 'percentile') ? 'resources/blankForecast2.png' : 'resources/blankForecast.png';
-    $.get(window.location.href + 'aws3', param, function(date) {
+    $.get(window.location.href + 'most-recent-available-date', param, function(date) {
         let imgParam = {
             file: param.prefix + getModelPrefix() + date + '_',
             suffix: param.suffix,
             standard: standardMapStyle,
             threshold: thresholdType
         };
+        if(mostRecentDefaultDate === null) {
+            mostRecentDefaultDate = date;
+            let currentDate = new Date(`${parseDate(mostRecentDefaultDate, 'month', '-')} ${parseDate(mostRecentDefaultDate, 'day', '-')} ${parseDate(mostRecentDefaultDate, 'year', '-')}`);
+            let dateDiff = Math.floor((new Date().getTime() - currentDate.getTime()) / (1000 * 3600 * 24));
+            currentInitialize = INITIALIZE_HISTORY_LIMIT - dateDiff;
+        }
         currentLabelDate = date;
         updateDayLabel(date);
         initializeDates(date);
-        $.get(window.location.href + 'aws', imgParam, function(data) {
+        $.get(window.location.href + 'retrieve-img-urls', imgParam, function(data) {
             forecastImageCache = [];
             for(let i = 0; i < BUFFER_SIZE + (thresholdType === 'percentile' ? 0 : 10); i++) {
                 forecastImageCache[i] = data[i];
@@ -1319,17 +1345,33 @@ function retrieveImages(_callback = () => {}) {
 function toggleInitButtons() {
     let btnDown = document.getElementById('init-down');
     let btnUp = document.getElementById('init-up');
-    if(currentInitialize === 0) {
-        btnUp.style.display = 'inline';
-        btnDown.style.display = 'none';
-        return;
-    } else if(currentInitialize === INITIALIZE_HISTORY_LIMIT) {
-        btnUp.style.display = 'none';
-        btnDown.style.display = 'inline';
-        return;
+
+    let dateString = generateDateStringFromInit();
+    let tomorrow = new Date(dateString);
+    tomorrow.setDate(tomorrow.getDate() + 2);
+    tomorrow = `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}`;
+
+    let param = {
+        prefix: getPrefix(),
+        suffix: sigmaToPercentile(true),
+        model: getModelPrefix(),
+        date: tomorrow
     }
-    btnUp.style.display = 'inline';
-    btnDown.style.display = 'inline';
+    $.get(window.location.href + 'data-exists-at-date', param, function(isValid) {
+        let tomorrowHasData = isValid;
+
+        if(currentInitialize === 0) {
+            btnUp.style.display = tomorrowHasData ? 'inline' : 'none';
+            btnDown.style.display = 'none';
+            return;
+        } else if(currentInitialize === INITIALIZE_HISTORY_LIMIT) {
+            btnUp.style.display = 'none';
+            btnDown.style.display = 'inline';
+            return;
+        }
+        btnUp.style.display = tomorrowHasData ? 'inline' : 'none';
+        btnDown.style.display = 'inline';
+    });
 }
 
 function setPreviewImages(cache) {
@@ -1964,6 +2006,26 @@ function updateThresholdSlider() {
     thresholdSlider.value = currentSigma;
 }
 
+function generateDateStringFromCalendar() {
+    let day = Number(document.getElementById('button-day').innerText);
+    let month = document.getElementById('button-month').innerText;
+    let year = Number(document.getElementById('button-year').innerText);
+    let monthValue = convertMonthToInt(month);
+
+    return `${year}-${pad(monthValue)}-${pad(day)}`;
+}
+
+function generateDateStringFromInit() {
+    let date = document.getElementById('init').innerText;
+    let dateArray = date.split(' ');
+
+    let day = dateArray[1];
+    let month = pad(convertMonthToInt(dateArray[0]));
+    let year = dateArray[2];
+
+    return `${year}-${month}-${day}`
+}
+
 function submitCalendar() {
     let day = Number(document.getElementById('button-day').innerText);
     let month = document.getElementById('button-month').innerText;
@@ -1972,21 +2034,25 @@ function submitCalendar() {
     let submitSpinner = document.getElementById('calendar-spinner-id');
     submitSpinner.style.display = 'inline-block';
 
-    let monthValue = convertMonthToInt(month);
+    let initElement = document.getElementById('init');
+    initElement.innerText = `${month} ${pad(day)} ${year} (00Z)`
 
-    let dateString = `${year}-${pad(monthValue)}-${pad(day)}`
-
+    let dateString = generateDateStringFromInit();
     let param = {
         prefix: getPrefix(),
         suffix: sigmaToPercentile(true),
         model: getModelPrefix(),
         date: dateString
     }
-    $.get(window.location.href + 'aws4', param, function(isValid) {
+    $.get(window.location.href + 'data-exists-at-date', param, function(isValid) {
         if(isValid) {
+            initialDateLoaded = true;
             updateInitializationDate(pad(day), pad(month), year);
         } else {
-            alert(`The date: ${pad(month)} ${pad(day)}, ${year} does not have data.`);
+            if(initialDateLoaded) {
+                alert(`The date: ${pad(month)} ${pad(day)}, ${year} does not have data.`);
+            }
+            initialDateLoaded = true;
             submitSpinner.style.display = 'none';
         }
     });
