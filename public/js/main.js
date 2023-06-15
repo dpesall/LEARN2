@@ -2244,6 +2244,7 @@ document.getElementById('option-gefs').addEventListener('click', function() {
 // Threshold Type Selection
 document.getElementById('option-percentile').addEventListener('click', function() {
     updateThresholdType('percentile');
+    updateMean(currentSigma);
 });
 document.getElementById('option-static').addEventListener('click', function() {
     updateThresholdType('static');

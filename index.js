@@ -8,6 +8,9 @@ const AWS = require('aws-sdk');
 const nodemailer = require('nodemailer');
 
 const BUFFER_SIZE = 70;
+const TEN_MINUTES = 10 * 60 * 1000;
+
+let mostRecentDateWithData = '';
 
 app.use(express.static('public/'));
 
@@ -173,7 +176,16 @@ function s3ListObjects(params, _callback) {
 let recentDate = '';
 function mostRecentAvailableDate(dateObject, dateOffset, prefix, suffix, _callback) {
     let date = dateObject.getFullYear() + '-' + pad(dateObject.getMonth() + 1) + '-' + pad(dateObject.getDate());
+
+    let todayObject = new Date();
+    let today = todayObject.getFullYear() + '-' + pad(todayObject.getMonth() + 1) + '-' + pad(todayObject.getDate());
+
+    if(today === date && mostRecentDateWithData !== '') {
+        date = mostRecentDateWithData;
+    }
+
     let keyName = prefix + date + suffix;
+
     s3.headObject({Bucket: bucket, Key: keyName}, function(err, metadata) {
         if(err) {
             dateObject.setDate(dateObject.getDate() - 1);
@@ -187,6 +199,29 @@ function mostRecentAvailableDate(dateObject, dateOffset, prefix, suffix, _callba
 
 function pad(n) {
     return (n < 10) ? ('0' + n) : n;
+}
+
+const templatePrefix = '0.25_Vote_';
+const templateSuffix = '_1_60th.png';
+
+// Reloading the most recently available date with data to speed up initial page loading time
+setMostRecentDate(new Date());
+setInterval(() => {
+    setMostRecentDate(new Date());
+}, TEN_MINUTES);
+
+function setMostRecentDate(dateObject) {
+    let date = dateObject.getFullYear() + '-' + pad(dateObject.getMonth() + 1) + '-' + pad(dateObject.getDate());
+    let keyName = templatePrefix + date + templateSuffix;
+    s3.headObject({Bucket: bucket, Key: keyName}, function(err, metadata) {
+        if(err) {
+            dateObject.setDate(dateObject.getDate() - 1);
+            setMostRecentDate(dateObject, templatePrefix, templateSuffix);
+        } else {
+            mostRecentDateWithData = date;
+            //console.log(mostRecentDateWithData)
+        }
+    });
 }
 
 app.get('/data-exists-at-date', async (req, res) => {
