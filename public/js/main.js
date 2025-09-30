@@ -1,6 +1,5 @@
 const rootDirectory = 'resources/'
 const percentileThreshold = '_percentile_threshold';
-const sigmaDaySuffix = '_sigma_Day';
 const highResPrefix = 'High_res_'
 const lowResPrefix = 'Low_res_'
 const extension = '.png'
@@ -10,8 +9,10 @@ const resolution = document.querySelectorAll('.button-resolution');
 const contactCheckbox = document.querySelectorAll('.form-check-input-light');
 const activePreviewButton = document.querySelectorAll('.btn-outline-primary');
 
-const INITIALIZE_HISTORY_LIMIT = 5;
+const INITIALIZE_HISTORY_LIMIT = 365;
 const DAY_MS = 86400000;
+const HOUR_MS = DAY_MS / 24;
+const BUFFER_SIZE = 70;
 
 // ratios of inner-map to full forecast and threshold images image
 const topToImage = 162;
@@ -21,8 +22,15 @@ const yHeight = 4768;
 
 const xRatio = 2011 / xWidth;
 const yRatio = 3686 / yHeight;
-const xRatioThreshold = 1732 / 3463;
+const xRatioThreshold = 1644 / 3463;
 const yRatioThreshold = 3007 / 4092;
+
+const _xWidth = 4221;
+const _yHeight = 4690;
+const _leftToImage = 808;
+const _topToImage = 158;
+const _xRatio = 1970 / _xWidth;
+const _yRatio = 3614 / _yHeight;
 
 const chartSettingsDark = {
     fontColor: 'white',
@@ -36,8 +44,12 @@ const chartSettingsLight = {
 let chartSettingsCurrent = chartSettingsDark;
 
 let currentSigma = .5;
+let previousSigma = .5;
 let forecastDayIndex = 1;
-let currentInitialize = 5;
+let currentInitialize = INITIALIZE_HISTORY_LIMIT;
+let savedLatitude = -1;
+let savedLongitude = -1;
+let resizeDelay = 0;
 
 let previewsEnabled = false;
 let isTodayStored = false;
@@ -45,15 +57,18 @@ let chartStacked = false;
 let chartLoadedOnce = false;
 let isPanelLocked = true;
 let dark = true;
-let fullStop = true;
 let resetGrid = false;
 let canMoveDays = true;
 let hasSelectedCoordinate = false;
+let feedbackViewable = false;
+let standardMapStyle = true;
+let initialDateLoaded = false;
 
 let timeSeriesCanvas = null;
 let timeSeriesCanvas2 = null;
 let savedX = null;
 let savedY = null;
+let mostRecentDefaultDate = null;
 
 let modelType = 'Voting';
 let chartType = 'line';
@@ -75,12 +90,25 @@ let mapArray = [];
 let allCSVArray = [];
 let clickedCoordinates = [];
 let savedTableData = ['--', '--', '( , )'];
-let csvCache = Array(10);
+let csvCache = Array(14);
 
 // On-Load Functionality
 window.onload = function() {
     initializePreview();
     initializeTheme();
+    initializeDropdowns(function() {
+        document.querySelectorAll('.day-item').forEach(item => {
+            item.addEventListener('click', event => {
+                document.querySelector('#button-day').textContent = event.target.textContent;
+            });
+        });
+
+        document.querySelectorAll('.year-item').forEach(item => {
+            item.addEventListener('click', event => {
+                document.querySelector('#button-year').textContent = event.target.textContent;
+            });
+        });
+    });
 }
 
 Array.prototype.max = function() {
@@ -91,12 +119,83 @@ Array.prototype.min = function() {
     return Math.min.apply(null, this);
 };
 
+function initializeDropdowns(_callback) {
+    let dayDropdown = document.getElementById('dropdown-day');
+    let yearDropdown = document.getElementById('dropdown-year');
+
+    let newHTML = '';
+    for(let i = 1; i <= 31; i++) {
+        newHTML += `<li><a class="dropdown-item day-item" id="option-${i}">${i}</a></li>\n`
+    }
+    dayDropdown.innerHTML = newHTML;
+
+    let currentDate = new Date();
+    newHTML = '';
+    for(let i = currentDate.getFullYear(); i >= 2022; i--) {
+        newHTML += `<li><a class="dropdown-item year-item" id="option-${i}">${i}</a></li>\n`
+    }
+    yearDropdown.innerHTML = newHTML;
+
+    resetDateDropdowns();
+
+    _callback();
+}
+
+function resetDateDropdowns() {
+    let currentDate = new Date();
+    let dayButton = document.getElementById('button-day');
+    let monthButton = document.getElementById('button-month');
+    let yearButton = document.getElementById('button-year');
+
+    if(mostRecentDefaultDate != null) {
+        dayButton.innerHTML = parseDate(mostRecentDefaultDate, 'day', '-').toString();
+        monthButton.innerHTML = monthIntToString(parseDate(mostRecentDefaultDate, 'month', '-'));
+        yearButton.innerHTML = parseDate(mostRecentDefaultDate, 'year', '-').toString();
+        submitCalendar();
+    } else {
+        dayButton.innerHTML = currentDate.getDate().toString();
+        monthButton.innerHTML = monthIntToString(currentDate.getMonth() + 1);
+        yearButton.innerHTML = currentDate.getFullYear().toString();
+    }
+}
+
+// Retrieve parsed portions of dates in YYYY-MM-DD or YYYY/MM/DD formats
+function parseDate(date, period, delimiter) {
+    let dateArray = date.split(delimiter);
+    switch(period) {
+        case 'day':
+            return parseInt(dateArray[2]);
+        case 'month':
+            return parseInt(dateArray[1]);
+        case 'year':
+            return parseInt(dateArray[0]);
+    }
+}
+
+function monthIntToString(index) {
+    switch(index) {
+        case 1: return 'January';
+        case 2: return 'February';
+        case 3: return 'March';
+        case 4: return 'April';
+        case 5: return 'May';
+        case 6: return 'June';
+        case 7: return 'July';
+        case 8: return 'August';
+        case 9: return 'September';
+        case 10: return 'October';
+        case 11: return 'November';
+        case 12: return 'December';
+    }
+}
+
 function submitFeedback() {
     let initValue = document.getElementById('feedback-init').value;
     let threshValue = document.getElementById('feedback-threshold').value;
     let modelValue = document.getElementById('feedback-model').value;
     let resValue = document.getElementById('feedback-res').value;
     let dayValue = document.getElementById('feedback-day').value;
+    let coordinateValue = document.getElementById('feedback-coordinates').value;
     let requestForContact = document.getElementById('contact-checkbox').checked;
     let emailValue = document.getElementById('feedback-email').value;
 
@@ -106,7 +205,7 @@ function submitFeedback() {
     let description = document.getElementById('additional-details-box').value;
 
     let feedbackInfo = {};
-    feedbackInfo = `Initialization Date: ${initValue}\nThreshold Value:${threshValue}\nModel: ${modelValue}\nResolution: ${resValue}\nForecast Day: ${dayValue}\nDescription: ${description}\nRequest For Contact: ${requestForContact}`;
+    feedbackInfo = `Initialization Date: ${initValue}\nThreshold Value:${threshValue}\nModel: ${modelValue}\nResolution: ${resValue}\nForecast Day: ${dayValue}\nCoordinates: ${coordinateValue}\nDescription: ${description}\nRequest For Contact: ${requestForContact}`;
     if(requestForContact) {
         feedbackInfo += '\nEmail: ' + emailValue;
     }
@@ -125,6 +224,7 @@ function submitFeedback() {
 }
 
 function toggleFeedback() {
+    feedbackViewable = !feedbackViewable;
     let feedbackSection = document.getElementById('feedback-section');
     feedbackSection.style.display = feedbackSection.style.display === 'block' ? 'none' : 'block';
     populateIssueBoxes();
@@ -136,40 +236,85 @@ function populateIssueBoxes() {
     let modelBox = document.getElementById('feedback-model');
     let resBox = document.getElementById('feedback-res');
     let dayBox = document.getElementById('feedback-day');
+    let coordinateBox = document.getElementById('feedback-coordinates');
 
     initBox.value = currentLabelDate;
-    threshBox.value = sigmaToPercentile(false);
+    if(thresholdType === 'percentile') {
+        threshBox.value = sigmaToPercentile(false);
+    } else {
+        threshBox.value = staticSliderToInches(document.getElementById('static-threshold-slider-id').value);
+    }
     modelBox.value = modelType;
     resBox.value = currentResolution === 'high' ? 'High' : 'Low';
     dayBox.value = forecastDayIndex;
+    coordinateBox.value = savedLongitude === -1 ? 'None Selected' : `(${savedLatitude.toFixed(2)}, ${savedLongitude.toFixed(2)})`
 }
 
+function staticSliderToInches(value) {
+    switch(value) {
+        case '0':
+            return 0.25;
+        case '1':
+            return 0.50;
+        case '2':
+            return 0.75;
+        case '3':
+            return 1.00;
+        case '4':
+            return 1.50;
+        case '5':
+            return 2.00;
+        case '6':
+            return 3.00;
+        case '7':
+            return 4.00;
+    }
+}
 
-function loadCanvas() {
+function loadModifiedCanvas() {
     let forecastCanvas = document.getElementById('forecast-canvas');
     let img = document.getElementById('forecast-image');
 
-    let thresholdCanvas = document.getElementById('threshold-canvas');
-    let thresholdImage = document.getElementById('threshold-image');
+    let _xOffset = img.width * (_leftToImage / _xWidth);
+    let _yOffset = img.height * (_topToImage / _yHeight);
 
-    let xOffset = img.width * (leftToImage / xWidth);
-    let yOffset = img.height * (topToImage / yHeight);
+    forecastCanvas.height = img.height * _yRatio;
+    forecastCanvas.width = img.width * _xRatio;
+    forecastCanvas.style.left = (img.offsetLeft + _xOffset) + 'px';
+    forecastCanvas.style.top = (img.offsetTop + _yOffset) + 'px';
+}
 
-    let xOffset2 = thresholdImage.width * (707 / 3463);
-    let yOffset2 = thresholdImage.height * (topToImage / 4092);
+function loadCanvas() {
+    setTimeout(() => {
+        let forecastCanvas = document.getElementById('forecast-canvas');
+        let img = document.getElementById('forecast-image');
 
-    let useYRatio = yRatio;
-    let useYRatioThreshold = yRatioThreshold;
+        let thresholdCanvas = document.getElementById('threshold-canvas');
+        let thresholdImage = document.getElementById('threshold-image');
 
-    forecastCanvas.height = img.height * useYRatio;
-    forecastCanvas.width = img.width * xRatio;
-    forecastCanvas.style.left = (img.offsetLeft + 3 + xOffset) + 'px';
-    forecastCanvas.style.top = (img.offsetTop + 3 + yOffset) + 'px';
+        if(currentSigma === 3 && !standardMapStyle) {
+            loadModifiedCanvas();
+            return;
+        }
 
-    thresholdCanvas.height = thresholdImage.height * useYRatioThreshold;
-    thresholdCanvas.width = thresholdImage.width * xRatioThreshold;
-    thresholdCanvas.style.left = (thresholdImage.offsetLeft + 3 + xOffset2) + 'px';
-    thresholdCanvas.style.top = (thresholdImage.offsetTop + 3 + yOffset2) + 'px';
+        let xOffset = img.width * (leftToImage / xWidth);
+        let yOffset = img.height * (topToImage / yHeight);
+
+        let xOffset2 = thresholdImage.width * (791 / 3463);
+        let yOffset2 = thresholdImage.height * (topToImage / 4092);
+
+        let useYRatioThreshold = yRatioThreshold;
+
+        forecastCanvas.height = img.height * yRatio;
+        forecastCanvas.width = img.width * xRatio;
+        forecastCanvas.style.left = (img.offsetLeft + xOffset) + 'px';
+        forecastCanvas.style.top = (img.offsetTop + yOffset) + 'px';
+
+        thresholdCanvas.height = thresholdImage.height * useYRatioThreshold;
+        thresholdCanvas.width = thresholdImage.width * xRatioThreshold;
+        thresholdCanvas.style.left = (thresholdImage.offsetLeft + xOffset2) + 'px';
+        thresholdCanvas.style.top = (thresholdImage.offsetTop + yOffset2) + 'px';
+    }, 0);
 }
 
 function setChartLocation(location) {
@@ -178,20 +323,24 @@ function setChartLocation(location) {
 
     let leftChart = document.getElementById('time-series-id');
     let rightChart = document.getElementById('time-series-id-2');
+    let instruction = document.getElementById('instruction')
 
     chartLocation = location;
     switch(chartLocation) {
         case 'Left':
             leftChart.style.display = 'block';
             rightChart.style.display = 'none';
+            instruction.style.display = 'block';
             break;
         case 'Right':
             leftChart.style.display = 'none';
             rightChart.style.display = 'block';
+            instruction.style.display = 'none';
             break;
         case 'Both':
             leftChart.style.display = 'block';
             rightChart.style.display = 'block';
+            instruction.style.display = 'none';
             break;
     }
 }
@@ -213,13 +362,13 @@ function getChartArrays(x, y) {
     let tempArray = [];
     try {
         for(let i = 0; i < 10; i++) {
-            for(let j = 4; j > 0; j--) {
+            for(let j = 6; j > 0; j--) {
                 if(allCSVArray[(10 * j) + i][y][x] > allCSVArray[(10 * (j - 1) + i)][y][x]) {
                     allCSVArray[(10 * (j - 1) + i)][y][x] = allCSVArray[(10 * j) + i][y][x];
                 }
             }
         }
-        for(let i = 0; i < 5; i++) {
+        for(let i = 0; i < (thresholdType === 'percentile' ? 7 : 8); i++) {
             tempArray.push(
                 [
                     (allCSVArray[(10 * i)][y][x] * 100).toFixed(0),
@@ -306,7 +455,8 @@ const fillColors = [
     'rgb(0,255,64)',
     'rgb(186,255,0)',
     'rgb(255,111,0)',
-    'rgb(255,0,0)'
+    'rgb(255,0,0)',
+    'rgb(84,0,90)'
 ]
 
 function getFill(index) {
@@ -321,32 +471,76 @@ function getFill(index) {
 }
 
 function getLegendLabel(index, x ,y) {
-    let label = csvCache[index + resolutionOffset()][y][x];
-    let percentile = 50 + (index * 10);
-    label += ' (' + percentile + 'th percentile)';
+    let label = '';
+    if(thresholdType === 'percentile') {
+        label = csvCache[index + resolutionOffset()][y][x];
+        let percentile = 50 + (index * 10);
+        if(index === 5) {
+            percentile = 95;
+        } else if(index === 6) {
+            percentile = 99;
+        }
+        label += ' (' + percentile + 'th percentile)';
+    }
+    if(thresholdType === 'static') {
+        label = '' + staticSliderToInches('' + index) + ' inches';
+    }
     return label;
 }
 
+
+let hiddenLabels = [0, 0, 0, 0, 0, 0, 0];
 const forecastLabels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
-function showTimeSeries(x, y, res) {
+function showTimeSeries(x, y, res, fromClicked = false) {
     if(x == null || y == null || resetGrid === true) {
         return;
     }
+    if(savedX === x && savedY === y && fromClicked) {
+        savedX = -1;
+        savedY = -1;
+        cleanTimeSeries();
+        let canvasForecast = document.getElementById('forecast-canvas');
+        let canvasThreshold = document.getElementById('threshold-canvas');
+
+        let ctx = canvasForecast.getContext('2d');
+        let ctx2 = canvasThreshold.getContext('2d');
+
+        ctx.clearRect(0, 0, canvasForecast.width, canvasForecast.height);
+        ctx2.clearRect(0, 0, canvasThreshold.width, canvasThreshold.height);
+        return;
+    }
+    savedX = x;
+    savedY = y;
     chartSettingsCurrent = dark ? chartSettingsDark : chartSettingsLight;
-    updateCanvas(x, y);
+    setTimeout(() => {
+        updateCanvas(x, y)
+    }, resizeDelay);
     chartLoadedOnce = true;
 
     let latitude = 0;
     let longitude = 0;
 
+    let latOffset = 0;
+    let lonOffset = 0;
+
     if(res === 'high') {
-        latitude = 49.5 - (y * 16.5 / 67) - ((16.5 / 67) / 2);
-        longitude = -124.5 + (x * 8 / 37) + ((8 / 37) / 2);
+        latOffset = 16.5 / 67;
+        lonOffset = 9 / 37;
+        latitude = 49.5 - (y * latOffset) - (latOffset / 2);
+        longitude = -124.5 + (x * lonOffset) + (lonOffset / 2);
     } else {
-        latitude = 49.5 - (y * 16.5 / 12) - .6875;
-        longitude = -124.5 + (x * 8 / 7) + ((8 / 7) / 2);
+        latOffset = 16.5 / 12;
+        lonOffset = 9 / 7;
+        latitude = 49.5 - (y * latOffset) - (latOffset / 2);
+        longitude = -124.5 + (x * lonOffset) + (lonOffset / 2);
     }
 
+    savedLongitude = longitude;
+    savedLatitude = latitude;
+
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
     savedTableData = [
         mapArray[y][x] < 0 ? '--' : (100 * mapArray[y][x]).toFixed(0) + '%',
         csvCache[(currentSigma * 2) + resolutionOffset()][y][x] < 0 ? '--' : csvCache[(currentSigma * 2) + resolutionOffset()][y][x] + ' in',
@@ -360,73 +554,118 @@ function showTimeSeries(x, y, res) {
             return;
         }
     } catch(e) {}
-    savedX = x;
-    savedY = y;
     let ctx = document.getElementById('time-series-chart-id');
     let ctx2 = document.getElementById('time-series-chart-id-2');
     let leftChart = document.getElementById('time-series-id');
     let rightChart = document.getElementById('time-series-id-2');
+    let instruction = document.getElementById('instruction');
 
     switch(chartLocation) {
         case 'Left':
             leftChart.style.display = 'block';
             rightChart.style.display = 'none';
+            instruction.style.display = 'block';
             break;
         case 'Right':
             leftChart.style.display = 'none';
             rightChart.style.display = 'block';
+            instruction.style.display = 'none';
             break;
         case 'Both':
             leftChart.style.display = 'block';
             rightChart.style.display = 'block';
+            instruction.style.display = 'block';
             break;
     }
+
+    const newLegendClickHandler = function (e, legendItem, legend) {
+        const index = legendItem.datasetIndex;
+        const ci = legend.chart;
+        if (ci.isDatasetVisible(index)) {
+            ci.hide(index);
+            legendItem.hidden = true;
+            hiddenLabels[index] = 1;
+        } else {
+            ci.show(index);
+            legendItem.hidden = false;
+            hiddenLabels[index] = 0;
+        }
+    };
 
     let chartArrays = getChartArrays(x, y);
     const chartData = {
         labels: forecastLabels,
         datasets: [{
-            label: getLegendLabel(0, x, y), // '50th Percentile',
-            backgroundColor: 'rgb(0,197,255)',
-            borderColor: 'rgb(0,196,255)',
-            borderWidth: 1.5,
-            data: chartArrays[0],
-            fill: getFill(0)
-        },
+                label: getLegendLabel(0, x, y), // '50th Percentile',
+                backgroundColor: 'rgb(0,64,255)',
+                borderColor: 'rgb(0,64,255)',
+                borderWidth: 1.5,
+                data: chartArrays[0],
+                fill: getFill(0)
+            },
             {
                 label: getLegendLabel(1, x, y), // '60th Percentile',
-                backgroundColor: 'rgb(0,255,64)',
-                borderColor: 'rgb(0,255,64)',
+                backgroundColor: 'rgb(0,196,255)',
+                borderColor: 'rgb(0,196,255)',
                 borderWidth: 1.5,
                 data: chartArrays[1],
                 fill: getFill(1)
             },
             {
                 label: getLegendLabel(2, x, y), // '70th Percentile',
-                backgroundColor: 'rgb(186,255,0)',
-                borderColor: 'rgb(186,255,0)',
+                backgroundColor: 'rgb(0,255,64)',
+                borderColor: 'rgb(0,255,64)',
                 borderWidth: 1.5,
                 data: chartArrays[2],
                 fill: getFill(2)
             },
             {
                 label: getLegendLabel(3, x, y), // '80th Percentile',
-                backgroundColor: 'rgb(255,111,0)',
-                borderColor: 'rgb(255,111,0)',
+                backgroundColor: 'rgb(186,255,0)',
+                borderColor: 'rgb(186,255,0)',
                 borderWidth: 1.5,
                 data: chartArrays[3],
                 fill: getFill(3)
             },
             {
                 label: getLegendLabel(4, x, y), // '90th Percentile',
-                backgroundColor: 'rgb(255,0,0)',
-                borderColor: 'rgb(255,0,0)',
+                backgroundColor: 'rgb(255,111,0)',
+                borderColor: 'rgb(255,111,0)',
                 borderWidth: 1.5,
                 data: chartArrays[4],
                 fill: getFill(4)
             },
+            {
+                label: getLegendLabel(5, x, y), // '95th Percentile',
+                backgroundColor: 'rgb(255,0,0)',
+                borderColor: 'rgb(255,0,0)',
+                borderWidth: 1.5,
+                data: chartArrays[5],
+                fill: getFill(5)
+            },
+            {
+                label: getLegendLabel(6, x, y), // '99th Percentile',
+                backgroundColor: 'rgb(238,0,255)',
+                borderColor: 'rgb(238,0,255)',
+                borderWidth: 1.5,
+                data: chartArrays[6],
+                fill: getFill(6)
+            }
         ],
     };
+
+    if(thresholdType === 'static') {
+        chartData.datasets.push(
+            {
+                label: getLegendLabel(7, x, y),
+                backgroundColor: 'rgb(84,0,90)',
+                borderColor: 'rgb(84,0,90)',
+                borderWidth: 1.5,
+                data: chartArrays[7],
+                fill: getFill(7)
+            }
+        );
+    }
 
     savedTableData = [
         mapArray[y][x] < 0 ? '--' : (100 * mapArray[y][x]).toFixed(0) + '%',
@@ -458,8 +697,9 @@ function showTimeSeries(x, y, res) {
                         font: {
                             size: 14
                         },
-                        color: chartSettingsCurrent.fontColor
-                    }
+                        color: chartSettingsCurrent.fontColor,
+                    },
+                    onClick: newLegendClickHandler
                 },
                 tooltip: {
                     titleFont: {
@@ -529,7 +769,6 @@ function showTimeSeries(x, y, res) {
         ctx2,
         chartConfig
     );
-
     timeSeriesCanvas.config.options.onClick = timeSeriesCanvas2.config.options.onClick = (e) => {
         const canvasPosition = Chart.helpers.getRelativePosition(e, timeSeriesCanvas);
 
@@ -554,13 +793,14 @@ function paintCanvas(x, y, ctx, canvas) {
     ctx.beginPath();
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#ffffff';
-    ctx.rect(x * xStep, y * yStep, xStep, yStep);
+    ctx.outline
+    ctx.rect(x * xStep - 1, y * yStep - 1, xStep + 2, yStep + 2);
     ctx.stroke();
 
     ctx.beginPath();
     ctx.lineWidth = 1;
     ctx.strokeStyle = '#030303';
-    ctx.rect(x * xStep + 2, y * yStep + 2, xStep - 4, yStep - 4);
+    ctx.rect(x * xStep + 1, y * yStep + 1, xStep - 2, yStep - 2);
     ctx.stroke();
 
     ctx.beginPath();
@@ -570,6 +810,7 @@ function paintCanvas(x, y, ctx, canvas) {
 }
 
 function updateCanvas(x, y) {
+    resizeDelay = 0;
     let canvasForecast = document.getElementById('forecast-canvas');
     let canvasThreshold = document.getElementById('threshold-canvas');
 
@@ -577,7 +818,9 @@ function updateCanvas(x, y) {
     let ctx2 = canvasThreshold.getContext('2d');
 
     paintCanvas(x, y, ctx, canvasForecast);
-    paintCanvas(x, y, ctx2, canvasThreshold);
+    if(thresholdType === 'percentile') {
+        paintCanvas(x, y, ctx2, canvasThreshold);
+    }
 }
 
 function updateValueBox(x, y, res) {
@@ -595,12 +838,21 @@ function updateValueBox(x, y, res) {
         let latitude = 0;
         let longitude = 0;
 
+        let latOffset = 0;
+        let lonOffset = 0;
+
         if(res === 'high') {
-            latitude = 49.5 - (y * 16.5 / 67) - ((16.5 / 67) / 2);
-            longitude = -124.5 + (x * 8 / 37) + ((8 / 37) / 2);
+            latOffset = 16.5 / 67;
+            lonOffset = 9 / 37;
+
+            latitude = 49.5 - (y * latOffset) - (latOffset / 2);
+            longitude = -124.5 + (x * lonOffset) + (lonOffset / 2);
         } else {
-            latitude = 49.5 - (y * 16.5 / 12) - .6875;
-            longitude = -124.5 + (x * 8 / 7) + ((8 / 7) / 2);
+            latOffset = 16.5 / 12;
+            lonOffset = 9 / 7;
+
+            latitude = 49.5 - (y * latOffset) - (latOffset / 2);
+            longitude = -124.5 + (x * lonOffset) + (lonOffset / 2);
         }
 
         coordinates.innerHTML = `(${latitude.toFixed(2)}, ${longitude.toFixed(2)})`;
@@ -611,7 +863,7 @@ function updateValueBox(x, y, res) {
 }
 
 function resolutionOffset() {
-    return currentResolution === 'high' ? 5 : 0;
+    return currentResolution === 'high' ? 7 : 0;
 }
 
 function loadAllCSVFiles(_callback) {
@@ -634,12 +886,16 @@ function loadAllCSVFiles(_callback) {
     loadCSVFile('resources/Low_res_70th_percentile_threshold.csv', 2);
     loadCSVFile('resources/Low_res_80th_percentile_threshold.csv', 3);
     loadCSVFile('resources/Low_res_90th_percentile_threshold.csv', 4);
+    loadCSVFile('resources/Low_res_95th_percentile_threshold.csv', 5);
+    loadCSVFile('resources/Low_res_99th_percentile_threshold.csv', 6);
 
-    loadCSVFile('resources/High_res_50th_percentile_threshold.csv', 5);
-    loadCSVFile('resources/High_res_60th_percentile_threshold.csv', 6);
-    loadCSVFile('resources/High_res_70th_percentile_threshold.csv', 7);
-    loadCSVFile('resources/High_res_80th_percentile_threshold.csv', 8);
-    loadCSVFile('resources/High_res_90th_percentile_threshold.csv', 9);
+    loadCSVFile('resources/High_res_50th_percentile_threshold.csv', 7);
+    loadCSVFile('resources/High_res_60th_percentile_threshold.csv', 8);
+    loadCSVFile('resources/High_res_70th_percentile_threshold.csv', 9);
+    loadCSVFile('resources/High_res_80th_percentile_threshold.csv', 10);
+    loadCSVFile('resources/High_res_90th_percentile_threshold.csv', 11);
+    loadCSVFile('resources/High_res_95th_percentile_threshold.csv', 12);
+    loadCSVFile('resources/High_res_99th_percentile_threshold.csv', 13);
 }
 
 function loadCSVFile(fileName, index) {
@@ -656,41 +912,86 @@ function loadCSVFile(fileName, index) {
     });
 }
 
+function getEmptyLegendLabel(index) {
+    switch(index) {
+        case 0:
+            return thresholdType === 'percentile' ? '50th Percentile' : staticSliderToInches('' + index) + ' inches';
+        case 1:
+            return thresholdType === 'percentile' ? '60th Percentile' : staticSliderToInches('' + index) + ' inches';
+        case 2:
+            return thresholdType === 'percentile' ? '70th Percentile' : staticSliderToInches('' + index) + ' inches';
+        case 3:
+            return thresholdType === 'percentile' ? '80th Percentile' : staticSliderToInches('' + index) + ' inches';
+        case 4:
+            return thresholdType === 'percentile' ? '90th Percentile' : staticSliderToInches('' + index) + ' inches';
+        case 5:
+            return thresholdType === 'percentile' ? '95th Percentile' : staticSliderToInches('' + index) + ' inches';
+        case 6:
+            return thresholdType === 'percentile' ? '99th Percentile' : staticSliderToInches('' + index) + ' inches';
+        case 7:
+            return staticSliderToInches('' + index) + ' inches';
+    }
+}
+
 function cleanTimeSeries() {
     const chartData = {
         labels: forecastLabels,
         datasets: [{
-            label: '50th Percentile',
-            backgroundColor: 'rgb(0,197,255)',
-            borderColor: 'rgb(0,196,255)',
-            borderWidth: 1.5,
-        },
+                label: getEmptyLegendLabel(0),
+                backgroundColor: 'rgb(0,64,255)',
+                borderColor: 'rgb(0,64,255)',
+                borderWidth: 1.5,
+            },
+
             {
-                label: '60th Percentile',
+                label: getEmptyLegendLabel(1),
+                backgroundColor: 'rgb(0,197,255)',
+                borderColor: 'rgb(0,196,255)',
+                borderWidth: 1.5,
+            },
+            {
+                label: getEmptyLegendLabel(2),
                 backgroundColor: 'rgb(0,255,64)',
                 borderColor: 'rgb(0,255,64)',
                 borderWidth: 1.5,
             },
             {
-                label: '70th Percentile',
+                label: getEmptyLegendLabel(3),
                 backgroundColor: 'rgb(186,255,0)',
                 borderColor: 'rgb(186,255,0)',
                 borderWidth: 1.5,
             },
             {
-                label: '80th Percentile',
+                label: getEmptyLegendLabel(4),
                 backgroundColor: 'rgb(255,111,0)',
                 borderColor: 'rgb(255,111,0)',
                 borderWidth: 1.5,
             },
             {
-                label: '90th Percentile',
+                label: getEmptyLegendLabel(5),
                 backgroundColor: 'rgb(255,0,0)',
                 borderColor: 'rgb(255,0,0)',
                 borderWidth: 1.5,
             },
-        ],
+            {
+                label: getEmptyLegendLabel(6),
+                backgroundColor: 'rgb(238,0,255)',
+                borderColor: 'rgb(238,0,255)',
+                borderWidth: 1.5,
+            }
+        ]
     };
+
+    if(thresholdType === 'static') {
+        chartData.datasets.push(
+            {
+                label: getEmptyLegendLabel(7),
+                backgroundColor: 'rgb(84,0,90)',
+                borderColor: 'rgb(84,0,90)',
+                borderWidth: 1.5,
+            }
+        );
+    }
 
     const config = {
         type: chartType,
@@ -778,17 +1079,25 @@ function readCSV(shouldSet = false) {
         prefix: getPrefix(),
         suffix: sigmaToPercentile(true),
         model: getModelPrefix(),
-        offset: getDateOffset()
+        offset: getDateOffset(),
+        threshold: thresholdType
     }
-    $.get(window.location.href + 'aws3', param, function(date) {
+    $.get(window.location.href + 'most-recent-available-date', param, function(date) {
         let csvParam = {
             file: param.prefix + getModelPrefix() + date + '_',
-            suffix: param.suffix
+            suffix: param.suffix,
+            threshold: thresholdType
         };
         updateDayLabel(date);
-        $.get(window.location.href + 'aws2', csvParam, function(data) {
+        $.get(window.location.href + 'retrieve-csv-data', csvParam, function(data) {
             allCSVArray = data;
-            let offset = (10 * (currentSigma * 2)) + (forecastDayIndex - 1);
+            let offset = 0;
+            if(thresholdType === 'percentile') {
+                offset = (10 * (currentSigma * 2)) + (forecastDayIndex - 1);
+            }
+            if(thresholdType === 'static') {
+                offset = (10 * staticThresholdIndex) + (forecastDayIndex - 1);
+            }
             mapArray = data[offset];
             loadAllCSVFiles(function() {
                 updateDay(0, false, false);
@@ -828,10 +1137,20 @@ function createGrid() {
         ySteps = 12;
     }
 
-    x *= xRatio;
-    y *= yRatio;
-    let xOffset = width * (leftToImage / xWidth);
-    let yOffset = height * (topToImage / yHeight);
+    let xOffset = 0;
+    let yOffset = 0;
+
+    if(currentSigma === 3 && !standardMapStyle) {
+        x *= _xRatio;
+        y *= _yRatio;
+        xOffset = width * (_leftToImage / _xWidth);
+        yOffset = height * (_topToImage / _yHeight);
+    } else {
+        x *= xRatio;
+        y *= yRatio;
+        xOffset = width * (leftToImage / xWidth);
+        yOffset = height * (topToImage / yHeight);
+    }
 
     let grid = '';
     for(let i = 0; i < ySteps; i++) {
@@ -840,7 +1159,7 @@ function createGrid() {
             let x2 = xOffset + (x * j) + x;
             let y1 = yOffset + (y * i);
             let y2 = yOffset + (y * i) + y;
-            grid += `<area shape="rect" coords="${x1}, ${y1}, ${x2}, ${y2}" alt="grid" onclick="showTimeSeries(${j}, ${i}, currentResolution);" onmouseover="updateValueBox(${j}, ${i}, currentResolution);">\n`;
+            grid += `<area shape="rect" coords="${x1}, ${y1}, ${x2}, ${y2}" alt="grid" onclick="showTimeSeries(${j}, ${i}, currentResolution, true);" onmouseover="updateValueBox(${j}, ${i}, currentResolution);">\n`;
         }
     }
     mapSpan.innerHTML = '<map name="forecast-map">\n' +
@@ -899,11 +1218,12 @@ function getModelPrefix() {
 }
 
 function getPrefix() {
-    return currentResolution === 'high' ? '0.25_' : '0.5_'
+    return currentResolution === 'high' ? '0.25_' : '1.5_'
 }
 
 function test() {
-
+    let img = document.getElementById('forecast-image');
+    img.src = 'resources/test_0.25_Vote_9--_categories_99th.png';
 }
 
 function correctModelType() {
@@ -923,9 +1243,9 @@ function updateDayLabel(date) {
     let realDateArray = realDate.split('-');
     let realDateObject = new Date(parseInt(realDateArray[0]), underflow((parseInt(realDateArray[1]) - 1), 11), parseInt(realDateArray[2]));
     let realDateObject2 = new Date(realDateObject);
-    realDateObject2.setTime(realDateObject2.getTime() - DAY_MS + (DAY_MS * forecastDayIndex));
+    realDateObject2.setTime(realDateObject2.getTime() + HOUR_MS - DAY_MS + (DAY_MS * forecastDayIndex));
     let realDateObject3 = new Date();
-    realDateObject3.setTime(realDateObject2.getTime() + DAY_MS);
+    realDateObject3.setTime(realDateObject2.getTime() + HOUR_MS + DAY_MS);
     let dateInitialize = document.getElementById('init');
     let forecastDateLabel = document.getElementById('main-forecast-date');
     let newDateArr1 = realDateObject2.toDateString().split(' ');
@@ -944,38 +1264,42 @@ function hideFeedbackSuccessText() {
     feedbackSuccess.style.display = 'none';
 }
 
-function hideFeedbackSuccessText() {
-    let feedbackSuccess = document.getElementById('feedback-success-id');
-    feedbackSuccess.style.display = 'none';
-}
-
-function retrieveImages() {
+function retrieveImages(_callback = () => {}) {
     hideFeedbackSuccessText();
     let spinner = document.getElementById('loading-spinner-id');
+    let submitSpinner = document.getElementById('calendar-spinner-id');
     let img = document.getElementById('forecast-image');
 
     spinner.style.display = 'block';
 
     enableInteraction();
-
     let param = {
         prefix: getPrefix(),
         suffix: sigmaToPercentile(true),
         model: getModelPrefix(),
-        offset: getDateOffset()
+        offset: getDateOffset(),
+        threshold: thresholdType
     }
-    img.src = 'resources/blankForecast.png';
-    $.get(window.location.href + 'aws3', param, function(date) {
+    img.src = (currentSigma === 3 && !standardMapStyle && thresholdType === 'percentile') ? 'resources/blankForecast2.png' : 'resources/blankForecast.png';
+    $.get(window.location.href + 'most-recent-available-date', param, function(date) {
         let imgParam = {
             file: param.prefix + getModelPrefix() + date + '_',
-            suffix: param.suffix
+            suffix: param.suffix,
+            standard: standardMapStyle,
+            threshold: thresholdType
         };
+        if(mostRecentDefaultDate === null) {
+            mostRecentDefaultDate = date;
+            let currentDate = new Date(`${parseDate(mostRecentDefaultDate, 'month', '-')} ${parseDate(mostRecentDefaultDate, 'day', '-')} ${parseDate(mostRecentDefaultDate, 'year', '-')}`);
+            let dateDiff = Math.floor((new Date().getTime() - currentDate.getTime()) / (1000 * 3600 * 24));
+            currentInitialize = INITIALIZE_HISTORY_LIMIT - dateDiff;
+        }
         currentLabelDate = date;
         updateDayLabel(date);
         initializeDates(date);
-        $.get(window.location.href + 'aws', imgParam, function(data) {
+        $.get(window.location.href + 'retrieve-img-urls', imgParam, function(data) {
             forecastImageCache = [];
-            for(let i = 0; i < 50; i++) {
+            for(let i = 0; i < BUFFER_SIZE + (thresholdType === 'percentile' ? 0 : 10); i++) {
                 forecastImageCache[i] = data[i];
             }
             if(spinner == null) {
@@ -998,7 +1322,12 @@ function retrieveImages() {
                     gefsCache = forecastImageCache;
                     break;
             }
-            img.src = forecastImageCache[(10 * currentSigma * 2) + (forecastDayIndex - 1)];
+            if(thresholdType === 'percentile') {
+                img.src = forecastImageCache[(10 * currentSigma * 2) + (forecastDayIndex - 1)];
+            }
+            if(thresholdType === 'static') {
+                img.src = forecastImageCache[(10 * staticThresholdIndex) + (forecastDayIndex - 1)];
+            }
             setPreviewImages(forecastImageCache);
             if(!isTodayStored) {
                 localStorage.setItem('todayData', forecastImageCache[10]);
@@ -1006,7 +1335,9 @@ function retrieveImages() {
             }
             canMoveDays = true;
             toggleInitButtons();
+            submitSpinner.style.display = 'none';
             spinner.style.display = 'none';
+            _callback();
         });
     });
 }
@@ -1014,24 +1345,54 @@ function retrieveImages() {
 function toggleInitButtons() {
     let btnDown = document.getElementById('init-down');
     let btnUp = document.getElementById('init-up');
-    if(currentInitialize === 0) {
-        btnUp.style.display = 'inline';
-        btnDown.style.display = 'none';
-        return;
-    } else if(currentInitialize === INITIALIZE_HISTORY_LIMIT) {
-        btnUp.style.display = 'none';
-        btnDown.style.display = 'inline';
-        return;
+
+    let dateString = generateDateStringFromInit();
+    let tomorrow = new Date(dateString);
+    tomorrow.setDate(tomorrow.getDate() + 2);
+    tomorrow = `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}`;
+
+    let param = {
+        prefix: getPrefix(),
+        suffix: sigmaToPercentile(true),
+        model: getModelPrefix(),
+        date: tomorrow
     }
-    btnUp.style.display = 'inline';
-    btnDown.style.display = 'inline';
+    $.get(window.location.href + 'data-exists-at-date', param, function(isValid) {
+        let tomorrowHasData = isValid;
+
+        if(currentInitialize === 0) {
+            btnUp.style.display = tomorrowHasData ? 'inline' : 'none';
+            btnDown.style.display = 'none';
+            return;
+        } else if(currentInitialize === INITIALIZE_HISTORY_LIMIT) {
+            btnUp.style.display = 'none';
+            btnDown.style.display = 'inline';
+            return;
+        }
+        btnUp.style.display = tomorrowHasData ? 'inline' : 'none';
+        btnDown.style.display = 'inline';
+    });
 }
 
 function setPreviewImages(cache) {
+    loadCanvas();
     if(cache.length > 0) {
         for(let i = 1; i <= 10; i++) {
             let img = document.getElementById('preview-image-' + i);
-            threadPreviewImage(cache, img, i - 1 + (10 * currentSigma * 2));
+            if(thresholdType === 'percentile') {
+                threadPreviewImage(cache, img, i - 1 + (10 * currentSigma * 2));
+            }
+            if(thresholdType === 'static') {
+                threadPreviewImage(cache, img, i - 1 + (10 * staticThresholdIndex));
+            }
+            if(i === 10) {
+                let modelButton = document.getElementById('button-model-dropdown');
+                let levelsButton = document.getElementById('button-99-toggle');
+                setTimeout(() => {
+                    modelButton.classList.remove('disabled');
+                    levelsButton.classList.remove('disabled');
+                }, 500);
+            }
         }
     }
 }
@@ -1045,7 +1406,12 @@ function setForecastImage(isInitializing) {
     spinner.style.display = 'block';
     let img = document.getElementById('forecast-image');
     setPreviewImages(forecastImageCache);
-    img.src = forecastImageCache[forecastDayIndex - 1 + (10 * currentSigma * 2)];
+    if(thresholdType === 'percentile') {
+        img.src = forecastImageCache[forecastDayIndex - 1 + (10 * currentSigma * 2)];
+    }
+    if(thresholdType === 'static') {
+        img.src = forecastImageCache[forecastDayIndex - 1 + (10 * staticThresholdIndex)];
+    }
     spinner.style.display = 'none';
 }
 
@@ -1077,7 +1443,7 @@ function initializeTheme() {
     themeCheckbox.checked = isChecked === 'true';
     dark = isChecked === 'true';
     chartSettingsCurrent = dark ? chartSettingsDark : chartSettingsLight;
-    updateTheme(dark);
+    updateTheme(dark, true);
 }
 
 function getTopScrollPosition() {
@@ -1122,7 +1488,7 @@ function updatePreview(isChecked) {
     }
 }
 
-function updateTheme(isChecked) {
+function updateTheme(isChecked, isInitializing = false) {
     let controlPanel = document.getElementById('control-panel-id');
     let controlPanelSection = document.getElementById('control-panel-section-id');
     let mainHeader = document.getElementById('main-header-id');
@@ -1131,9 +1497,12 @@ function updateTheme(isChecked) {
     let ctrlOff = document.getElementById('init');
     let forecastDay = document.getElementById('forecast-day');
     let daySlider = document.getElementById('day-slider-id');
+    let staticThreshold = document.getElementById('static-threshold')
     let thresholdSlider = document.getElementById('threshold-slider-id');
+    let staticThresholdSlider = document.getElementById('static-threshold-slider-id');
     let modelButton = document.getElementById('button-model-dropdown');
     let thresholdButton = document.getElementById('threshold');
+    let staticThresholdButton = document.getElementById('static-threshold');
     let userManual = document.getElementById('users-manual');
     let previewCheckbox = document.getElementById('preview-switch-background-id');
     let buttonHighRes = document.getElementById('button-high-res');
@@ -1151,8 +1520,15 @@ function updateTheme(isChecked) {
     let feedbackDay = document.getElementById('feedback-day');
     let additionalDetails = document.getElementById('additional-details-box');
     let feedbackEmail = document.getElementById('feedback-email');
-
-
+    let feedbackCoordinates = document.getElementById('feedback-coordinates');
+    let chartTip = document.getElementById('tooltiptext');
+    let button99 = document.getElementById('button-99-toggle');
+    let calendarDay = document.getElementById('button-day');
+    let calendarMonth = document.getElementById('button-month');
+    let calendarYear = document.getElementById('button-year');
+    let calendarSubmit = document.getElementById('calendar-submit');
+    let calendarReset = document.getElementById('calendar-reset');
+    let percentileDropdown = document.getElementById('button-percentile-dropdown');
 
     if (isChecked) {
         // Set Dark Theme
@@ -1168,8 +1544,12 @@ function updateTheme(isChecked) {
         forecastDay.style.backgroundColor = '#0d6efd';
         forecastDay.style.borderColor = '#0d6efd';
         thresholdButton.style.backgroundColor = '#0d6efd';
+        staticThresholdButton.style.backgroundColor = '#0d6efd';
+        staticThresholdButton.style.borderColor = '#0d6efd';
         userManual.style.backgroundColor = '#0d6efd';
         modelButton.style.backgroundColor = '#0d6efd';
+        percentileDropdown.style.backgroundColor = '#0d6efd';
+        percentileDropdown.style.borderColor = '#0d6efd';
         chartType.style.backgroundColor = '#0d6efd';
         buttonHighRes.style.backgroundColor = currentResolution === 'high' ? '#0d6efd' : '#212121';
         buttonHighRes.style.borderColor = '#0d6efd'
@@ -1177,6 +1557,8 @@ function updateTheme(isChecked) {
         buttonLowRes.style.borderColor = '#0d6efd'
         daySlider.style.accentColor = '#0d6efd';
         thresholdSlider.style.accentColor = '#0d6efd';
+        staticThreshold.style.accentColor = '#0d6efd';
+        staticThresholdSlider.style.accentColor = '#0d6efd';
         modelButton.style.borderColor = '#0a53be';
         previewCheckbox.style.backgroundColor = previewsEnabled ? previewCheckbox.style.backgroundColor = '#0d6efd' : previewCheckbox.style.backgroundColor = '#393939';
         // mappedValues.style.backgroundColor = '#212121';
@@ -1185,6 +1567,8 @@ function updateTheme(isChecked) {
         submitFeedback.style.borderColor = '#0d6efd';
         submitButton.style.backgroundColor = '#0d6efd';
         submitButton.style.borderColor = '#0d6efd';
+        button99.style.backgroundColor = '#0d6efd';
+        button99.style.borderColor = '#0d6efd';
         feedbackSection.style.backgroundColor = '#292929';
         feedbackInit.style.backgroundColor = '#161616';
         feedbackInit.style.color = 'white';
@@ -1200,9 +1584,19 @@ function updateTheme(isChecked) {
         additionalDetails.style.color = 'white';
         feedbackEmail.style.backgroundColor = '#161616';
         feedbackEmail.style.color = 'white';
-    
-        
-
+        feedbackCoordinates.style.backgroundColor = '#161616';
+        calendarDay.style.backgroundColor = '#0d6efd';
+        calendarDay.style.borderColor = '#0d6efd';
+        calendarMonth.style.backgroundColor = '#0d6efd';
+        calendarMonth.style.borderColor = '#0d6efd';
+        calendarYear.style.backgroundColor = '#0d6efd';
+        calendarYear.style.borderColor = '#0d6efd';
+        calendarSubmit.style.backgroundColor = '#0d6efd';
+        calendarSubmit.style.borderColor = '#0d6efd';
+        calendarReset.style.backgroundColor = '#0d6efd';
+        calendarReset.style.borderColor = '#0d6efd';
+        feedbackCoordinates.style.color = 'white';
+        chartTip.style.backgroundColor = '#0d6efd'
         dayButtons.forEach((dayButtons) => {
             dayButtons.style.borderColor = "#0a53be";
             dayButtons.classList.remove('light-hover');
@@ -1230,7 +1624,9 @@ function updateTheme(isChecked) {
         modelButton.style.backgroundColor = '#77c743';
         modelButton.style.borderColor = '#77c743';
         thresholdButton.style.backgroundColor = '#77c743';
-        thresholdButton.style.border = '#77c743';
+        thresholdButton.style.borderColor = '#77c743';
+        staticThresholdButton.style.backgroundColor = '#77c743';
+        staticThresholdButton.style.borderColor = '#77c743';
         buttonHighRes.style.backgroundColor = currentResolution === 'high' ? '#77c743' : '#6c757d';
         buttonHighRes.style.borderColor = '#77c743';
         buttonLowRes.style.backgroundColor = currentResolution  === 'low' ? '#77c743' : '#6c757d';
@@ -1242,6 +1638,8 @@ function updateTheme(isChecked) {
         mapSection.style.backgroundColor = '#efefef';
         daySlider.style.accentColor = '#569630';
         thresholdSlider.style.accentColor = '#569630';
+        staticThreshold.style.accentColor = '#569630';
+        staticThresholdSlider.style.accentColor = '#569630';
         pageBody.style.backgroundColor = '#bbd6b5';
         pageBody.style.color = 'black';
         previewCheckbox.style.backgroundColor = previewsEnabled ? previewCheckbox.style.backgroundColor = '#77c743' : previewCheckbox.style.backgroundColor = '#393939';
@@ -1251,6 +1649,8 @@ function updateTheme(isChecked) {
         submitFeedback.style.borderColor = '#77c743';
         submitButton.style.backgroundColor = '#77c743';
         submitButton.style.borderColor = '#77c743';
+        button99.style.backgroundColor = '#77c743';
+        button99.style.borderColor = '#77c743';
         feedbackSection.style.backgroundColor = '#fff';
         feedbackInit.style.backgroundColor = '#fff';
         feedbackInit.style.color = '#000';
@@ -1266,8 +1666,21 @@ function updateTheme(isChecked) {
         additionalDetails.style.color = '#000';
         feedbackEmail.style.backgroundColor = '#fff';
         feedbackEmail.style.color = '#000';
-        
-
+        feedbackCoordinates.style.backgroundColor = '#fff';
+        feedbackCoordinates.style.color = '#000';
+        chartTip.style.backgroundColor = '#4b9929b3';
+        calendarDay.style.backgroundColor = '#4b9929b3';
+        calendarDay.style.borderColor = '#4b9929b3';
+        calendarMonth.style.backgroundColor = '#4b9929b3';
+        calendarMonth.style.borderColor = '#4b9929b3';
+        calendarYear.style.backgroundColor = '#4b9929b3';
+        calendarYear.style.borderColor = '#4b9929b3';
+        calendarSubmit.style.backgroundColor = '#4b9929b3';
+        calendarSubmit.style.borderColor = '#4b9929b3';
+        calendarReset.style.backgroundColor = '#4b9929b3';
+        calendarReset.style.borderColor = '#4b9929b3';
+        percentileDropdown.style.backgroundColor = '#4b9929b3';
+        percentileDropdown.style.borderColor = '#4b9929b3';
 
         dayButtons.forEach((dayButtons) => {
             dayButtons.style.borderColor = "#77c743";
@@ -1285,12 +1698,15 @@ function updateTheme(isChecked) {
             activePreviewButton.classList.remove('btn-outline-primary');
         });
     }
+    if(isInitializing) {
+        document.body.style.display = 'block';
+    }
 }
 
-function setDay(day) {
+function setDay(day, shouldUpdate = true) {
     let forecast = document.getElementById('forecast-day');
     forecast.textContent = day;
-    updateDay(0, false);
+    updateDay(0, false, shouldUpdate);
 }
 
 function toggleDaySelection(isChecked) {
@@ -1300,10 +1716,56 @@ function toggleDaySelection(isChecked) {
 
 function quickUpdateFromCache(cache) {
     let img = document.getElementById('forecast-image');
-    img.src = cache[forecastDayIndex - 1 + (10 * currentSigma * 2)];
+    if(thresholdType === 'percentile') {
+        img.src = cache[forecastDayIndex - 1 + (10 * currentSigma * 2)];
+    }
+    if(thresholdType === 'static') {
+        img.src = cache[forecastDayIndex - 1 + (10 * staticThresholdIndex)];
+    }
+}
+
+let thresholdType = 'static';
+function updateThresholdType(type) {
+    if(type === thresholdType) {
+        return;
+    }
+    thresholdType = type;
+    let typeButton = document.getElementById('button-percentile-dropdown');
+    let percentileSection = document.getElementById('percentile-threshold-row-id');
+    let staticSection = document.getElementById('static-threshold-row-id');
+    let element = document.getElementById('map-style-id');
+    let thresholdValueLine = document.getElementById('threshold-value-line-id');
+    let thresholdValueDisplay = document.getElementById('threshold-value-id');
+    switch(type) {
+        case 'percentile':
+            typeButton.textContent = 'Percentile';
+            percentileSection.style.display = 'flex';
+            staticSection.style.display = 'none';
+            thresholdValueLine.style.display = thresholdValueDisplay.style.display = 'block'
+            if(parseFloat(currentSigma) === 3) {
+                element.style.display = 'flex';
+            }
+            updateThresholdImage();
+            break;
+        case 'static':
+            typeButton.textContent = 'Fixed';
+            percentileSection.style.display = 'none';
+            staticSection.style.display = 'flex';
+            element.style.display = 'none';
+            thresholdValueLine.style.display = thresholdValueDisplay.style.display = 'none'
+            break;
+    }
+    emptyCaches(() => {
+        retrieveImages();
+        updateModel(modelType);
+    });
+
 }
 
 function updateModel(type) {
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
     switch(modelType) {
         case 'Voting':
             temp = tempVote;
@@ -1322,7 +1784,12 @@ function updateModel(type) {
             break;
     }
     modelType = type;
+
     let modelButton = document.getElementById('button-model-dropdown');
+    let options = document.getElementById('dropdown-options-id');
+    setTimeout(() => {
+        modelButton.classList.add('disabled');
+    }, 0);
     modelButton.textContent = type;
     if(timeSeriesCanvas != null) {
         timeSeriesCanvas.destroy();
@@ -1388,9 +1855,13 @@ function updateImages() {
             }
             break;
     }
+    enableInteraction();
 }
 
 function updateDay(delta, modifyForecast, shouldUpdateImages = true) {
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
     let dateInitialize = document.getElementById('init');
     let forecast = document.getElementById('forecast-day');
     let currentDateArr = dateInitialize.textContent.split(' ');
@@ -1406,7 +1877,13 @@ function updateDay(delta, modifyForecast, shouldUpdateImages = true) {
         currentDate2.setDate(currentDate2.getDate() + dayOffset);
         updateForecastSlider(dayOffset);
         forecastDayIndex = dayOffset;
-        let offset = (10 * (currentSigma * 2)) + (forecastDayIndex - 1);
+        let offset = 0;
+        if(thresholdType === 'percentile') {
+            offset = (10 * (currentSigma * 2)) + (forecastDayIndex - 1);
+        }
+        if(thresholdType === 'static') {
+            offset = (10 * staticThresholdIndex) + (forecastDayIndex - 1);
+        }
         mapArray = allCSVArray[offset];
         if(shouldUpdateImages) {
             updateImages();
@@ -1417,22 +1894,111 @@ function updateDay(delta, modifyForecast, shouldUpdateImages = true) {
     }
 }
 
+function convertSigma(sigma) {
+    switch(sigma) {
+        case 2.5:
+            return 95;
+        case 3:
+            return 99;
+        default:
+            return 50 + (currentSigma * 20);
+    }
+}
+
+let currentStaticThreshold = .5;
+let staticThresholdImages = [
+    'High_res_fixed_0.25_0.25.png',
+    'High_res_fixed_0.5_0.25.png',
+    'High_res_fixed_0.75_0.25.png',
+    'High_res_fixed_1_0.25.png',
+    'High_res_fixed_1.5_0.25.png',
+    'High_res_fixed_2_0.25.png',
+    'High_res_fixed_3_0.25.png',
+    'High_res_fixed_4_0.25.png',
+]
+let staticThresholdIndex = 1;
+function updateStatic(newStatic) {
+    if(newStatic > 7 || newStatic < 0) {
+        return;
+    }
+
+    staticThresholdIndex = newStatic;
+
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
+
+    currentStaticThreshold = staticSliderToInches('' + newStatic);
+    let threshold = document.getElementById('static-threshold');
+    let slider = document.getElementById('static-threshold-slider-id');
+    let meanLabel = document.getElementById('mean-label');
+    let thresholdImage = document.getElementById('threshold-image');
+
+    threshold.innerText = currentStaticThreshold.toFixed(2);
+    slider.value = newStatic;
+    meanLabel.textContent = `Days Exceeding ${currentStaticThreshold.toFixed(2)} Inches:`;
+    thresholdImage.src = 'resources/' + staticThresholdImages[newStatic];
+
+    updateImages()
+}
+
 function updateMean(newSigma) {
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
     let threshold = document.getElementById('threshold');
     let meanLabel = document.getElementById('mean-label');
-    if(newSigma <= 2 && newSigma >= 0) {
+    if(newSigma <= 3 && newSigma >= 0) {
+        previousSigma = currentSigma;
         currentSigma = parseFloat(newSigma);
-        let thresholdValue = 50 + (currentSigma * 20);
+        let thresholdValue = convertSigma(currentSigma);
         threshold.textContent = `${thresholdValue}`;
         meanLabel.textContent = `PRISM Threshold Percentile: ${thresholdValue}`;
 
         let offset = (10 * (currentSigma * 2)) + (forecastDayIndex - 1);
         mapArray = allCSVArray[offset];
 
-        updateImages();
-        updateThresholdImage();
-        updateThresholdSlider();
+        if(currentSigma === 3) {
+            resizeDelay = 500;
+        } else if(previousSigma === 3) {
+            resizeDelay = 500;
+        }
+
+        setImagePlaceholder(() => {
+            setTimeout(() => {
+                updateImages();
+                updateThresholdImage();
+                updateThresholdSlider();
+            }, getFramePause());
+        });
     }
+    let element = document.getElementById('map-style-id');
+    if(parseFloat(newSigma) === 3) {
+        element.style.display = 'flex';
+    } else {
+        element.style.display = 'none';
+    }
+}
+
+function getFramePause() {
+    if(currentSigma !== 3 && previousSigma !== 3) {
+        return 0;
+    }
+    if((currentSigma === 3 && previousSigma !== 3) || (currentSigma !== 3 && previousSigma === 3) || (currentSigma === 3 && previousSigma === 3)) {
+        if(!standardMapStyle) {
+            return 500;
+        }
+        return 0;
+    }
+}
+
+function setImagePlaceholder(_callback) {
+    let image = document.getElementById('forecast-image');
+    let shouldUseModifiedSize = currentSigma === 3 && !standardMapStyle && thresholdType === 'percentile';
+
+    image.src = shouldUseModifiedSize ? 'resources/blankForecast2.png' : 'resources/blankForecast.png';
+
+    _callback();
 }
 
 function updateThresholdSlider() {
@@ -1440,7 +2006,99 @@ function updateThresholdSlider() {
     thresholdSlider.value = currentSigma;
 }
 
+function generateDateStringFromCalendar() {
+    let day = Number(document.getElementById('button-day').innerText);
+    let month = document.getElementById('button-month').innerText;
+    let year = Number(document.getElementById('button-year').innerText);
+    let monthValue = convertMonthToInt(month);
+
+    return `${year}-${pad(monthValue)}-${pad(day)}`;
+}
+
+function generateDateStringFromInit() {
+    let date = document.getElementById('init').innerText;
+    let dateArray = date.split(' ');
+
+    let day = dateArray[1];
+    let month = pad(convertMonthToInt(dateArray[0]));
+    let year = dateArray[2];
+
+    return `${year}-${month}-${day}`
+}
+
+function submitCalendar() {
+    let day = Number(document.getElementById('button-day').innerText);
+    let month = document.getElementById('button-month').innerText;
+    let year = Number(document.getElementById('button-year').innerText);
+
+    let submitSpinner = document.getElementById('calendar-spinner-id');
+    submitSpinner.style.display = 'inline-block';
+
+    let initElement = document.getElementById('init');
+    initElement.innerText = `${month} ${pad(day)} ${year} (00Z)`
+
+    let dateString = generateDateStringFromInit();
+    let param = {
+        prefix: getPrefix(),
+        suffix: sigmaToPercentile(true),
+        model: getModelPrefix(),
+        date: dateString
+    }
+    $.get(window.location.href + 'data-exists-at-date', param, function(isValid) {
+        if(isValid) {
+            initialDateLoaded = true;
+            updateInitializationDate(pad(day), pad(month), year);
+        } else {
+            if(initialDateLoaded) {
+                alert(`The date: ${pad(month)} ${pad(day)}, ${year} does not have data.`);
+            }
+            initialDateLoaded = true;
+            submitSpinner.style.display = 'none';
+        }
+    });
+}
+
+function convertMonthToInt(month) {
+    switch(month) {
+        case 'January': return 1;
+        case 'February': return 2;
+        case 'March': return 3;
+        case 'April': return 4;
+        case 'May': return 5;
+        case 'June': return 6;
+        case 'July': return 7;
+        case 'August': return 8;
+        case 'September': return 9;
+        case 'October': return 10;
+        case 'November': return 11;
+        case 'December': return 12;
+    }
+}
+
+function updateInitializationDate(day, month, year) {
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
+    let forecastDateLabel = document.getElementById('main-forecast-date');
+    let dateInitialize = document.getElementById('init');
+
+    let currentDate = new Date(`${month} ${day} ${year}`);
+    let newDateArr = currentDate.toDateString().split(' ');
+
+    let dateDiff = Math.floor((new Date().getTime() - currentDate.getTime()) / (1000 * 3600 * 24));
+    currentInitialize = INITIALIZE_HISTORY_LIMIT - dateDiff;
+
+    dateInitialize.textContent = `${newDateArr[1]} ${newDateArr[2]} ${newDateArr[3]} (00Z)`;
+    forecastDateLabel.textContent = `${newDateArr[1]} ${newDateArr[2]}, ${newDateArr[3]}`;
+    retrieveImages(function() {
+        updateImages();
+    });
+}
+
 function updateDate(increment) {
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
     let currentDateId = document.getElementById('init');
     let forecastDateLabel = document.getElementById('main-forecast-date');
     let currentDateArr = currentDateId.textContent.split(' ');
@@ -1452,21 +2110,22 @@ function updateDate(increment) {
     }
     let newDateArr = currentDate.toDateString().split(' ');
     forecastDateLabel.textContent = `${newDateArr[1]} ${newDateArr[2]}, ${newDateArr[3]}`;
-    retrieveImages();
+    retrieveImages(function() {
+        updateImages();
+    });
 }
 
 function sigmaToPercentile(suffix) {
     if(suffix) {
-        return 50 + (currentSigma * 20) + 'th';
+        return convertSigma(currentSigma) + 'th';
     } else {
-        return 50 + (currentSigma * 20);
+        return convertSigma(currentSigma);
     }
 }
 
 function updateThresholdImage() {
     let thresholdImage = document.getElementById('threshold-image');
     let newThresholdURL = rootDirectory;
-
     if(currentResolution === 'high') {
         newThresholdURL += highResPrefix + sigmaToPercentile(true) + percentileThreshold + extension;
     } else {
@@ -1475,7 +2134,7 @@ function updateThresholdImage() {
     thresholdImage.src = newThresholdURL;
 }
 
-function emptyCaches() {
+function emptyCaches(_callback) {
     votingCache = [];
     convolutionalCache = [];
     denseCache = [];
@@ -1490,9 +2149,37 @@ function emptyCaches() {
     hasSelectedCoordinate = false;
 
     cleanTimeSeries();
+
+    if(_callback !== undefined) {
+        _callback();
+    }
+}
+
+function setMapStyle(type) {
+    let element = document.getElementById('button-99-toggle');
+    element.innerText = type;
+    setTimeout(() => {
+        element.classList.add('disabled');
+    }, 0);
+
+    standardMapStyle = type === '20 Levels' || thresholdType === 'static';
+
+    let image = document.getElementById('forecast-image');
+    image.src = standardMapStyle ? 'resources/blankForecast2.png' : 'resources/blankForecast2.png';
+
+    resizeDelay = 500;
+    setImagePlaceholder(() => {
+        setTimeout(() => {
+            retrieveImages();
+        }, getFramePause());
+    });
+
 }
 
 function updateResolution(quality) {
+    if(feedbackViewable) {
+        populateIssueBoxes();
+    }
     let buttonHighRes = document.getElementById('button-high-res');
     let buttonLowRes = document.getElementById('button-low-res');
     resetGrid = true;
@@ -1531,6 +2218,12 @@ function updateForecastSlider(day) {
     forecastSlider.value = day;
 }
 
+document.querySelectorAll('.month-item').forEach(item => {
+    item.addEventListener('click', event => {
+        document.querySelector('#button-month').textContent = event.target.textContent;
+    });
+});
+
 // Model Selection
 document.getElementById('option-dense').addEventListener('click', function() {
     updateModel('Dense');
@@ -1548,6 +2241,16 @@ document.getElementById('option-gefs').addEventListener('click', function() {
     updateModel('GEFS');
 });
 
+// Threshold Type Selection
+document.getElementById('option-percentile').addEventListener('click', function() {
+    updateThresholdType('percentile');
+    updateMean(currentSigma);
+});
+document.getElementById('option-static').addEventListener('click', function() {
+    updateThresholdType('static');
+    updateStatic(parseInt(document.getElementById('static-threshold-slider-id').value));
+});
+
 // Chart Type Selection
 document.getElementById('option-line').addEventListener('click', function() {
     updateChart('line', false);
@@ -1557,6 +2260,14 @@ document.getElementById('option-stacked').addEventListener('click', function() {
 });
 document.getElementById('option-bar').addEventListener('click', function() {
     updateChart('bar', false);
+});
+
+// 99th Percentile Map Style
+document.getElementById('option-standard').addEventListener('click', function() {
+    setMapStyle('20 Levels');
+});
+document.getElementById('option-simplified').addEventListener('click', function() {
+    setMapStyle('4 Levels');
 });
 
 // Chart Location Selection
@@ -1584,9 +2295,26 @@ document.getElementById('button-feedback-id').addEventListener('click', function
     hideFeedbackSuccessText();
 });
 
+// Calendar Submit
+document.getElementById('calendar-submit').addEventListener('click', function() {
+    submitCalendar();
+});
+
 // Feedback Submit Button
 document.getElementById('button-submit-id').addEventListener('click', function() {
     submitFeedback();
+});
+
+// Reset Calendar Dropdowns
+document.getElementById('calendar-reset').addEventListener('click', function() {
+    resetDateDropdowns();
+});
+
+// Calendar Toggle Button
+document.getElementById('calendar-button-id').addEventListener('click', function() {
+    let calendar = document.getElementById('calendar-id');
+    let currentlyViewable = calendar.style.display === 'flex';
+    calendar.style.display = currentlyViewable ? 'none' : 'flex';
 });
 
 // Forecast Increment Buttons
@@ -1621,14 +2349,30 @@ document.getElementById('threshold-down').addEventListener('click', function() {
     updateMean(currentSigma - .5);
 });
 
-// Sigma Slider
+// Percentile Slider
 document.getElementById('threshold-slider-id').addEventListener('input', function() {
     updateMean(this.value);
+});
+
+// Static Slider
+document.getElementById('static-threshold-slider-id').addEventListener('input', function() {
+    updateStatic(this.value);
+});
+// Static Threshold Buttons
+document.getElementById('static-threshold-up').addEventListener('click', function() {
+    updateStatic(parseInt(document.getElementById('static-threshold-slider-id').value) + 1);
+});
+document.getElementById('static-threshold-down').addEventListener('click', function() {
+    updateStatic(parseInt(document.getElementById('static-threshold-slider-id').value) - 1);
 });
 
 // Control Panel Lock
 document.getElementById('lock-image-id').addEventListener('click', function() {
     toggleControlPanelLock();
+});
+
+document.getElementById('forecast-image').addEventListener('mouseover', function() {
+    showSavedTableData();
 });
 
 // Initialize Buttons
@@ -1678,11 +2422,11 @@ $( window ).on( "load", function() {
     retrieveImages();
 });
 
+const closeTip = document.getElementById('tooltip-close');
 
-
-
-
-
+closeTip.addEventListener('click', function handleClick(event) {
+  closeTip.parentElement.remove();
+});
 
 
 

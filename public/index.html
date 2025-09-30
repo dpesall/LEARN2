@@ -2,6 +2,15 @@
 <html class="no-js" lang="">
 
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-7GSB4GJ3TC"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-7GSB4GJ3TC');
+  </script>
   <meta charset="utf-8">
   <title>LEARN&sup2;</title>
   <meta name="description" content="">
@@ -21,13 +30,14 @@
   <script src="https://sdk.amazonaws.com/js/aws-sdk-2.179.0.min.js"></script>
   <script src="js/jquery-csv.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/generic.js"></script>
 </head>
 
-<body>
+<body style="display: none;">
   <div class="page-body" id="page-body-id">
     <div class="container-fluid main-header" id="main-header-id">
       <div class="learn2-logo">
-      <img src="resources/logo.png" class="img-fluid" style="width: 200px" alt="Responsive image">
+      <img src="resources/logo.png" onclick="redirect('home');" class="img-fluid showSingle" style="width: 200px" alt="Responsive image">
       LEARN&sup2;
       </div>
       <h3 class="learn2">Landfalling Event Atmospheric River Neural Network - Extreme Precipitation Tool</h3>
@@ -48,20 +58,20 @@
               <div class="col-sm-5">
                 <div>
                   Daily Rainfall Threshold
-                  <div id="mean-label" style="font-size: 20px; padding-bottom: 2%;">PRISM Threshold Percentile: 60</div>
+                  <div id="mean-label" style="font-size: 20px; padding-bottom: 2%;">Days Exceeding 0.50 Inches:</div>
                 </div>
               </div>
             </div>
             <div class="row both-maps">
               <div class="col-7" style="padding: 0;">
-                <img onmouseover="showSavedTableData();" id="forecast-image" usemap="#forecast-map" src="resources/blankForecast.png" onerror="this.src='resources/noData.png'" class="img-fluid image-main-border" alt="image">
+                <img id="forecast-image" usemap="#forecast-map" src="resources/blankForecast.png" onerror="this.src='resources/noData.png'" class="img-fluid image-main-border" alt="image">
                 <canvas id="forecast-canvas" width="0" height="0"></canvas>
                 <span id="interactive-map-id">
                   <map id="forecast-map-id" name="forecast-map"></map>
                 </span>
               </div>
               <div class="col-5" style="padding: 0;">
-                <img id="threshold-image" src="resources/High_res_60th_percentile_threshold.png" class="img-fluid image-main-border" alt="image">
+                <img id="threshold-image" src="resources/High_res_fixed_0.5_0.25.png" class="img-fluid image-main-border" alt="image">
                 <canvas id="threshold-canvas" width="0" height="0"></canvas>
                 <div style="padding-top: 10px;"></div>
                 <div class="container-fluid">
@@ -70,12 +80,12 @@
                       <table class="value-table" id="value-table" style="width: 100%;">
                         <tr style="width: 70%;">
                           <th>Likelihood of Exceedance</th>
-                          <th>Threshold Value</th>
+                          <th style="display: none;" id="threshold-value-line-id">Threshold Value</th>
                           <th>Coordinates</th>
                         </tr>
                         <tr style="width: 30%;">
                           <td id="exceedance-id">--</td>
-                          <td id="threshold-value-id">--</td>
+                          <td style="display: none;" id="threshold-value-id">--</td>
                           <td id="coordinate-id">( , )</td>
                         </tr>
                       </table>
@@ -148,6 +158,16 @@
                     <div class="col-sm-8 feedback-fields">
                       <label>
                         <input type="text" id="feedback-day" class="feedback-input">
+                      </label>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-sm-4 feedback-left">
+                      Coordinates:
+                    </div>
+                    <div class="col-sm-8 feedback-fields">
+                      <label>
+                        <input type="text" id="feedback-coordinates" class="feedback-input">
                       </label>
                     </div>
                   </div>
@@ -232,7 +252,7 @@
         </div>
         <div class="col-sm-5 control-panel-section" id="control-panel-section-id">
           <div class="user-preface">
-            <a href='/user_guide' target="_blank" style ="width:100%"><div class="btn btn-lg btn-primary users-manual" id="users-manual">User's Guide</div></a>
+            <a href='/user_guide' target="_blank" style ="width:100%"><div class="btn btn-lg btn-primary users-manual" id="users-manual">User's Guide v3.0</div></a>
             <div class="theme-selection">
               <label class="theme-switch-label">
                 <input id="theme-switch-id" class="theme-switch" type="checkbox" checked>
@@ -243,15 +263,20 @@
               </label>
             </div>
           </div>
-          <span id="time-series-id-2" class="chart" style="display: none;">
+          <div id="instruction">Once loaded, click a point on the <em>Likelihood of Threshold Exceedance</em> map to display time series chart.</div>
+          <span id="time-series-id-2" class="chart tool-tip"  style="display: none;">
+          <span id="tooltiptext">
+            <div id='tooltip-close' class= 'btn tooltip-btn'>X</div>
+            Click on any of the colored blocks above time series chart to hide a dataset. For example, 
+            to display only the 90th percentile (red block) click all other blocks to hide.
+          </span>
+           
+            
             <canvas id="time-series-chart-id-2"></canvas>
           </span>
           <div style="padding-top: 10px"></div>
           <div class="control-panel" id="control-panel-id">
             <div style="text-align: right; display: none;"><img id="lock-image-id" src="resources/locked.png" class="img-fluid lock-image" alt="Responsive image padding-image"></div>
-            <!-- <span class="control-panel-title">
-              Control Panel
-            </span> -->
             <div class="control-panel-settings">
               <div class="container-fluid">
                 <div class="row">
@@ -262,10 +287,118 @@
                     <button class="btn btn-secondary" id="init-down">&#8592;</button>
                     <button class="btn btn-primary" id="init">00Z</button>
                     <button class="btn btn-secondary" id="init-up">&#8594;</button>
+                    <button class="btn btn-secondary" id="calendar-button-id">&#x1F4C6;</button>
                   </div>
                 </div>
+                <div class="row calendar-section" id="calendar-id" style="display: none">
+                  <div class="col-sm-5 calendar-column" style="text-align: right">
+                    Day:
+                  </div>
+                  <div class="col-sm-7 calendar-column" style="text-align: left">
+                    <div class="dropdown">
+                      <button class="btn btn-primary dropdown-toggle" id="button-day" style="width: 150px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        1
+                      </button>
+                      <ul id="dropdown-day" class="dropdown-menu">
+                        <li><a class="dropdown-item" id="option-1">1</a></li>
+                      </ul>
+                    </div>
+                  </div>
 
+                  <div class="col-sm-5 calendar-column" style="text-align: right">
+                    Month:
+                  </div>
+                  <div class="col-sm-7 calendar-column" style="text-align: left">
+                    <div class="dropdown">
+                      <button class="btn btn-primary dropdown-toggle" id="button-month" style="width: 150px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">January</button>
+                      <ul id="dropdown-month" class="dropdown-menu">
+                        <li><a class="dropdown-item month-item" id="option-jan">January</a></li>
+                        <li><a class="dropdown-item month-item" id="option-feb">February</a></li>
+                        <li><a class="dropdown-item month-item" id="option-mar">March</a></li>
+                        <li><a class="dropdown-item month-item" id="option-apr">April</a></li>
+                        <li><a class="dropdown-item month-item" id="option-may">May</a></li>
+                        <li><a class="dropdown-item month-item" id="option-jun">June</a></li>
+                        <li><a class="dropdown-item month-item" id="option-jul">July</a></li>
+                        <li><a class="dropdown-item month-item" id="option-aug">August</a></li>
+                        <li><a class="dropdown-item month-item" id="option-sep">September</a></li>
+                        <li><a class="dropdown-item month-item" id="option-oct">October</a></li>
+                        <li><a class="dropdown-item month-item" id="option-nov">November</a></li>
+                        <li><a class="dropdown-item month-item" id="option-dec">December</a></li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div class="col-sm-5 calendar-column" style="text-align: right">
+                    Year:
+                  </div>
+                  <div class="col-sm-7 calendar-column" style="text-align: left">
+                    <div class="dropdown">
+                      <button class="btn btn-primary dropdown-toggle" id="button-year" style="width: 150px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        2022
+                      </button>
+                      <ul id="dropdown-year" class="dropdown-menu">
+                        <li><a class="dropdown-item" id="option-2022">2022</a></li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-sm">
+                      <button class="btn btn-primary" id="calendar-reset" style="margin:10px 10px 10px 40px; width: 120px">Reset Date</button>
+                      <button class="btn btn-primary" id="calendar-submit" style="margin-bottom: 10px; margin-top: 10px; width: 120px">Submit</button>
+                      <div class="spinner-border text-primary" id="calendar-spinner-id" role="status" style="display: none;">
+                        <span class="sr-only"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div class="row">
+                  <div class="col-sm-5 extension padding-main control-panel-label">
+                    Threshold Type:
+                  </div>
+                  <div class="col-sm-7 extension padding-main">
+                    <div class="dropdown">
+                      <button class="btn btn-primary dropdown-toggle" style="width: 150px;" id="button-percentile-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Fixed
+                      </button>
+                      <ul id="dropdown-percentile-id" class="dropdown-menu">
+                        <li><a class="dropdown-item" id="option-percentile">Percentile</a></li>
+                        <li><a class="dropdown-item" id="option-static">Fixed</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div class="row" id="static-threshold-row-id">
+                  <div class="col-sm-5 extension padding-main control-panel-label">
+                    Threshold:
+                  </div>
+                  <div class="col-sm-7 extension padding-main">
+                    <button class="btn btn-secondary" id="static-threshold-down">&#8592;</button>
+                    <div class="btn btn-primary button-no-pointer" id="static-threshold" style="width: 60px;">0.50</div>
+                    <button class="btn btn-secondary" id="static-threshold-up">&#8594;</button>
+                    Inches
+                  </div>
+                  <div class="container-fluid">
+                    <div class="row">
+                      <div class="threshold-slider-wrapper centered-text">
+                        <input class="threshold-slider" type="range" id="static-threshold-slider-id" name="volume" min="0" max="7" step="1" value="1">
+                      </div>
+                    </div>
+                    <div class="threshold-slider-ticks">
+                      <div class="row">
+                        <div class="col-sm">0.25</div>
+                        <div class="col-sm">0.50</div>
+                        <div class="col-sm">0.75</div>
+                        <div class="col-sm">1.00</div>
+                        <div class="col-sm">1.50</div>
+                        <div class="col-sm">2.00</div>
+                        <div class="col-sm">3.00</div>
+                        <div class="col-sm">4.00</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row" id="percentile-threshold-row-id" style="display: none;">
                   <div class="col-sm-5 extension padding-main control-panel-label">
                     Threshold:
                   </div>
@@ -278,7 +411,7 @@
                   <div class="container-fluid">
                     <div class="row">
                       <div class="threshold-slider-wrapper centered-text">
-                        <input class="threshold-slider" type="range" id="threshold-slider-id" name="volume" min="0" max="2" step=".5" value=".5">
+                        <input class="threshold-slider" type="range" id="threshold-slider-id" name="volume" min="0" max="3" step=".5" value=".5">
                       </div>
                     </div>
                     <div class="threshold-slider-ticks">
@@ -288,12 +421,30 @@
                         <div class="col-sm">70</div>
                         <div class="col-sm">80</div>
                         <div class="col-sm">90</div>
+                        <div class="col-sm">95</div>
+                        <div class="col-sm">99</div>
                       </div>
                     </div>
                   </div>
                 </div>
-               
                 <br>
+                <div class="row" style="display: none;" id="map-style-id">
+                  <div class="col-sm-5 extension padding-main control-panel-label">
+                    Map Granularity:
+                  </div>
+                  <div class="col-sm-7 extension padding-main">
+                    <div class="dropdown">
+                      <button class="btn btn-primary dropdown-toggle" id="button-99-toggle" style="width: 150px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      20 Levels
+                      </button>
+                      <ul id="dropdown-99-id" class="dropdown-menu">
+                        <li><a class="dropdown-item" id="option-standard">20 Levels</a></li>
+                        <li><a class="dropdown-item" id="option-simplified">4 Levels</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="row">
                   <div class="col-sm-5 extension padding-main control-panel-label">
                     Model:
@@ -303,7 +454,7 @@
                       <button class="btn btn-primary dropdown-toggle" id="button-model-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Voting
                       </button>
-                      <ul class="dropdown-menu">
+                      <ul id="dropdown-options-id" class="dropdown-menu">
                         <li><a class="dropdown-item" id="option-voting">Voting</a></li>
                         <li><a class="dropdown-item" id="option-convolutional">Convolutional</a></li>
                         <li><a class="dropdown-item" id="option-dense">Dense</a></li>
@@ -317,7 +468,7 @@
                   </div>
                 </div>
 
-                <div class="row">
+                <div class="row" style="display: none;">
                   <div class="col-sm-5 extension padding-main control-panel-label">
                     Resolution:
                   </div>
@@ -467,7 +618,7 @@
         </div>
       </div>
       <div class="extension footer" id="ext-id">
-        <a href='https://innovim.com/' target="_blank"><img src="/resources/innovim_logo.png"></a>
+        <a href='https://innovim.com/' target="_blank"><img src="resources/innovim_logo.png"></a>
       </div>
     </div>
   </div>

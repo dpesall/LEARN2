@@ -2,6 +2,15 @@
 <html class="no-js" lang="">
 
 <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7GSB4GJ3TC"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-7GSB4GJ3TC');
+    </script>
     <meta charset="utf-8">
     <title>LEARN&sup2;</title>
     <meta name="description" content="">
@@ -19,8 +28,6 @@
     <meta name="theme-color" content="#fafafa">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.179.0.min.js"></script>
-
-
 </head>
 
 <body>
@@ -28,19 +35,14 @@
         <div class="user-guide-section">
             <div class="container-fluid main-header" id="main-header-id">
                 <div class="learn2-logo">
-                    <img src="resources/logo.png" class="img-fluid" style="width: 200px" alt="Responsive image">
+                    <img onclick="redirect('user_guide');" src="resources/logo.png" class="img-fluid showSingle" style="width: 200px" alt="Responsive image">
                     LEARN&sup2;
                 </div>
                 <h3 class="learn2">Landfalling Event Atmospheric River Neural Network</h3>
             </div>
         <a href="#" id="toTopBtn" class="cd-top text-replace js-cd-top cd-top--is-visible cd-top--fade-out" data-abc="true"></a>
-        
-       
-        
-           
             <div class="container-fluid user-guide-title">
                 User Guide
-            
             </div>
            
 <div class="container-fluid user-guide-control-panel">
@@ -56,8 +58,10 @@
                         <li><a class='content-links' href='#scope'>Scope</a></li>
                         <li><a class='content-links' href='#functional-guide'>Learn&sup2 Functional Guide</a></li>
                         <li><a class='content-links' href='#troubleshooting'>Troubleshooting</a></li>
+                        <li><a class='content-links' href='#versions'>Versions</a></li>
                         <li><a class='content-links' href='#faq'>FAQ</a></li>
-                        
+                        <li><a class='content-links' href='#credits'>LEARN2 Development Team</a></li>
+
                         
                     </ol>
                     <br>
@@ -99,9 +103,7 @@
             CPUs, 196 GB RAM, 50Gb/s network bandwidth, and 4 NVIDIA Tesla T4 GPUs. LEARN&sup2 is evaluated against the Parameter
             elevation Regression on Independent Slopes Model (PRISM) gridded precipitation ground truth dataset. This project's
             results are, in fact, highly promising in delivering additional value in this most critical window. Not surprisingly,
-            the development work has been particularly challenging and has required creative and exhaustive
-            <br>
-            exploration of the associated forecast space including a variety of input models, AI/ML tools, and model configurations.
+            the development work has been particularly challenging and has required creative and exhaustive exploration of the associated forecast space including a variety of input models, AI/ML tools, and model configurations.
             Using F1-score as our primary metric, LEARN&sup2’s overall network produces predictions that significantly outperform both
             the GEFS and ECMWF, delivering between one and two additional days of lead time for skillful extreme rainfall prediction
             when validated on fully independent data (see the below figures). Notably, adding the Pacific/North American (PNA),
@@ -157,56 +159,33 @@
             <br>
        <div class="gui-section">
            <div class="gui-info-left">
-          <div class="showSingle content-links" target="1"><em>i. </em>LEARN&sup2 URL</div>
-          <div class="showSingle content-links" target="2"><em>ii. </em>Version Identifier</div>
-          <div class="showSingle content-links" target="3"><em>iii. </em>Definition Bar</div>
-          <div class="showSingle content-links" target="4"><em>iv. </em>Extreme precipitation forecast panel</div>
-          <div class="showSingle content-links" target="5"><em>v. </em>Daily Rainfall threshold panel</div>
-          <div class="showSingle content-links" target="6"><em>vi. </em>User's guide button</div>
-          <div class="showSingle content-links" target="7"><em>vii. </em>Comment button</div>
-          </div>
-          <div class="gui-info-right">
-          <div class="showSingle content-links" target="8"><em>viii. </em>Light/Dark switch</div>
-          <div class="showSingle content-links" target="9"><em>ix. </em>Time series panel</div>
-          <div class="showSingle content-links" target="10"><em>x. </em>Likelihood of exceedance table</div>
-          <div class="showSingle content-links" target="11"><em>xi. </em>Control Panel</div>
-          <div class="showSingle content-links" target="12"><em>xii. </em>Forecast day panel</div>
-          <div class="showSingle content-links" target="13"><em>xiii. </em>Cursor utilization</div>
+          <div class="showSingle content-links" target="1"><em>i. </em>Extreme precipitation forecast panel</div>
+          <div class="showSingle content-links" target="2"><em>ii. </em>Daily Rainfall threshold panel</div>
+     
+          <div class="showSingle content-links" target="3"><em>iii. </em>User Feedback button</div>
+          
+         
+          <div class="showSingle content-links" target="4"><em>iv. </em>Time series panel</div>
+          <div class="showSingle content-links" target="5"><em>v. </em>Likelihood of exceedance table</div>
+        </div>
+        <div class="gui-info-right">
+         
+          <div class="showSingle content-links" target="6"><em>vi. </em>Control Panel</div>
+          <div class="showSingle content-links" target="7"><em>vii. </em>Forecast day panel</div>
+          <div class="showSingle content-links" target="8"><em>viii. </em>Cursor utilization</div>
+          <div class="showSingle content-links" target="9"><em>vix. </em>Map Granularity</div>
+          <div class="showSingle content-links" target="10"><em>x. </em>Calendar Initialization</div>
           </div>
            
        </div>
        <hr>
        <section class="cnt">
-        <div id="GI-1" class="targetDiv">
-            <h2>LEARN&sup2 URL</h2>
-            <hr>
-            The LEARN&sup2 extreme precipitation forecast tool is accessible at 
-            <a class='content-links' href='http://learn2.innovim.com/'>https://learn2.innovim.com/</a></div>
-
-            <div id="GI-2" class="targetDiv">
-                <h2>Version Identifier</h2>
-                <hr>
-                <div class="gui-img">
-                <img src="/resources/version-identifier.png">
-                </div>
-                <p>The version of the tool is identified here (not yet implemented; 
-                the current version is V1.0)</p>
-            </div>
-
-            <div id="GI-3" class="targetDiv">
-                <h2>Definition bar</h2>
-                <hr>
-                <div class="gui-img">
-                <img src="/resources/definition-bar.png">
-                </div>
-                <p>Defines the LEARN&sup2 acronym and displays the LEARN&sup2 logo</p>
-            </div>
         
-            <div id="GI-4" class="targetDiv">
+            <div id="GI-1" class="targetDiv">
                 <h2>Extreme precipitation forecast panel</h2>
                 <hr>
                 <div class="gui-img">
-                <img src="/resources/extreme-precipitation-forecast-panel.png">
+                <img src="/resources/extreme-precipitation-forecast-panel.png" alt='extreme_precipitation_forecast_panel_image' width="100%">
                 </div>
                 <p>This panel provides the likelihood that the 24-hour predicted precipitation across
                      the grid will exceed the threshold set in the Control Panel. This panel is the 
@@ -221,11 +200,11 @@
                      interactive with the cursor—a mouse click will enable the Time Series Panel (described in part xiii.)</p>
             </div>
 
-            <div id="GI-5" class="targetDiv">
+            <div id="GI-2" class="targetDiv">
                 <h2>Daily rainfall threshold panel</h2>
                 <hr>
                 <div class="gui-img">
-                <img src="/resources/daily-rainfall-threshold-panel.png">
+                <img src="/resources/daily-rainfall-threshold-panel.png" alt='Daily_rainfall_threshold_image' width="100%">
              </div>
                 <p>Because of the spatial variability in climatological rainfall, the implication of cumulative
                      precipitation exceeding a given threshold varies spatially. These values are based upon the
@@ -242,55 +221,41 @@
                            period Oct 30, 2022 (12Z) - Oct 31, 2022 (12Z) in the Extreme Precipitation Forecast Panel.</p>
             </div>
 
-            <div id="GI-6" class="targetDiv">
-                <h2>User's guide button</h2>
+        
+            <div id="GI-3" class="targetDiv">
+                <h2>User Feedback button</h2>
                 <hr>
                 <div class="gui-img">
-                <img src="/resources/users-guide-button.png">
-                </div>
-                <p>This button enables access to the User’s Guide.</p>
-            </div>
-
-            <div id="GI-7" class="targetDiv">
-                <h2>Comment button</h2>
-                <hr>
-                <div class="gui-img">
-                <img src="/resources/comment-button.png">
+                <img src="/resources/comment-button.png" alt='comment_button_image' width="100%">
                 </div>
                 <p>This button enables users to quickly note comments that will enable improvements of the tool in a subsequent version.</p>
             </div>
 
-            <div id="GI-8" class="targetDiv">
-                <h2>Light/Dark Switch</h2>
-                <hr>
-                <div class="gui-img">
-                <img src="/resources/light-dark-switch.png">
-                </div>
-                <p>This switch determines the background color of the user interface and can be set based 
-                    upon user preferences and the ambient background lighting.</p>
-            </div>
+          
 
-            <div id="GI-9" class="targetDiv">
+            <div id="GI-4" class="targetDiv">
                 <h2>Time series panel</h2>
                 <hr>
                 <div class="gui-img">
-                <img src="/resources/time-series-panel.png">
+                <img src="/resources/time-series-panel.png" alt='time_series_panel_image' width="100%">
                 </div>
                 <p>Once the user selects a point on the Extreme Precipitation Forecast Panel, 
-                    this panel displays all five (5) time series of percentile threshold exceedance 
-                    likelihoods (50%ile, 60%ile, 70%ile. 80%ile, and 90%ile) for all ten (10) forecast
+                    this panel displays all six (6) time series of percentile threshold exceedance 
+                    likelihoods (50th percenile, 60th percenile, 70th percenile, 80th percenile, 90th percenile, and 95th percenile) for all ten (10) forecast
                      days. For the grid element that was selected on the Extreme Precipitation Forecast Panel, 
                      the colors of each time series relate to the cumulative precipitation threshold values (inches) 
                      which are enumerated immediately above. Note that a mouse click to a particular forecast day within 
                      this Time Series Panel will correspondingly change the day displayed in the Extreme Precipitation
-                      Forecast Panel.</p>
+                      Forecast Panel. Furthermore, clicking on any of the colored rectangles above the chart will hide only that percentile's data. 
+                    For example, If the user only wants to see data from the 90th percentile, each other rectangle would need to be clicked in order to hide the 
+                data displayed from that percentile in the chart. </p>
             </div>
 
-            <div id="GI-10" class="targetDiv">
+            <div id="GI-5" class="targetDiv">
                 <h2>Likelihood of exceedance table</h2>
                 <hr>
                 <div class="gui-img">
-                <img src="/resources/likelihood-of-exceedance-table.png">
+                <img src="/resources/likelihood-of-exceedance-table.png" alt='likelihood_of_exceedance_image' width="100%">
                 </div>
                 <p>This table contains three pieces of information: (1) the numerical (%) likelihood of exceedance; 
                     (2) the corresponding threshold value (inches); and (3) the latitude and longitude of the center
@@ -298,19 +263,19 @@
                      the user by a mouse click on the Extreme Precipitation Forecast Panel.</p>
             </div>
 
-            <div id="GI-11" class="targetDiv">
+            <div id="GI-6" class="targetDiv">
 
                 <h2>Control panel</h2>
                 <hr>
                 <div class="gui-img">
-                <img src="/resources/control-panel.png">
+                <img src="/resources/control-panel.png" alt='control_panel_image' width="100%">
                 </div>
                 <p>This panel enables the user to select across four (4) different attributes of the LEARN&sup2
                      forecast tool: (1) Initialization ̶ this widget allows the user to switch between the most 
                      recent NWP model 00Z initiatlization as well as four (4) previous 00Z initializations to examine
                       how the forecasts are changing with time and more-or-less-recent information and their stability;
                        (2) Threshold ̶ this widget enables the use to select which 24-hour cumulative precipitation 
-                       percentile threshold exceedance likelihoods (50%ile, 60%ile, 70%ile. 80%ile, and 90%ile) to 
+                       percentile threshold exceedance likelihoods (50th percentile, 60th percentile, 70th percentile. 80th percentile, 90th percentile, 95th percentile and 99th percentile) to 
                        consider; (3) Model ̶ while the primary output of the LEARN&sup2 tool is the Voting model, this 
                        widget permits the user to consider each of the four input models: the Convolutional model, 
                        the Dense Network model, the operational ECMWF medium-range forecast model, and the operational
@@ -322,11 +287,11 @@
                          sense of the relative information content.</p>
             </div>
 
-            <div id="GI-12" class="targetDiv">
+            <div id="GI-7" class="targetDiv">
                 <h2>Forecast day control panel</h2>
                 <hr>
                 <div class="gui-img">
-                <img src="/resources/forecast-day-panel.png">
+                <img src="/resources/forecast-day-panel.png" alt='map_style_image' width="100%">
                 </div>
                 <p>This interactive widget enables the selection of the forecasted day of interest to be displayed in the
                      Extreme Precipitation Forecast Panel. The LEARN&sup2 tool is operable for forecasts in the range of 1-10
@@ -334,18 +299,125 @@
                        pair of Numerical Weather Prediction (NWP) models used in this application.</p>
             </div>
 
-            <div id="GI-13" class="targetDiv">
+            <div id="GI-8" class="targetDiv">
                 <h2>Cursor utilization</h2>
                 <hr>
                 <div class="gui-img">
-                <img src="/resources/cursor-utilization.png">
+                <img src="/resources/cursor-utilization.png" alt='Cursor_utilization_image' width="100%">
                 </div>
                 <p>When hovering over the Extreme Precipitation Forecast Panel, a mouse click will select a grid
                      square of interest. The time series of predicted exceedance likelihoods for that grid element will
-                      display in the Time Series Panel for all ten (10) forecast days and all five (5) available 
-                      percentiles (50%ile to 90%ile).</p>
+                      display in the Time Series Panel for all ten (10) forecast days and all seven (7) available 
+                      percentiles (50 Percentile to 99 Percentile).</p>
+
+                    </div>
+                    <div id="GI-9" class="targetDiv">
+                        <h2>Map Granularity</h2>
+                        <hr>
+                        <div class="gui-img">
+                        <img src="/resources/button-99.png" alt='map_style_image' width="100%">
+                        </div>
+                        <p>Map style can be changed to a more simplified version, with only 4 categories. This toggle will only exist for the 99th percentile.</p>
             </div>
+
+            <div id="GI-10" class="targetDiv">
+                <h2>Calendar Initialization</h2>
+                <hr>
+                <div class="gui-img">
+                <img src="/resources/calendar-init.png" alt='map_style_image' width="100%">
+                </div>
+                <p>The calendar icon next to the initialization date can be clicked on to input an initialization date using 
+                    dropdowns to select a month, date and year as a new data point. If the user selects a date which does not have any data for it, an alert will pop 
+                    up telling stating that there is no data for specified date. Date can also be reset to the current date.</p>
+    </div>
       </section>
+            <br>
+            <br>
+            <h2 id="versions">Versions</h2>
+            <hr>
+            <h3><b style="color:#e0f42b">Version 1.0</b></h3>
+            <p>
+                Version 1.0 was our operational model through 22 December 2022. It included six
+                threshold exceedance levels: the 50th, 60th, 70th, 80th, 90th and 95th percentiles. Because operational
+                meteorologists’ and hydrologists’ interest focused on the most extreme events, this version is now being
+                replaced by Version 2.1, which now adds an additional 99th percentile category.
+                Version 2.0 (internal only): This internal version implemented an additional extreme rainfall exceedance
+                category (99th percentile), and was used for development and testing.</p>
+                <p> A limitation of this version is that
+                events of this intensity are rare (by definition), and, as a result, the training dataset is significantly
+                unbalanced—with far fewer days and grid points exceeding the 99th percentile than those below it.
+                While some skill is evident (see 27 March 2005 example below as compared to the PRISM verification),
+                this imbalance causes the neural networks to be overly conservative in most cases.
+            </p>
+            <img class="img-fluid" src="resources/versioning_images_1.png" alt="versioning_image_1">
+            <br>
+            <br>
+            <h3><b style="color:#e0f42b">Version 2.1</b></h3>
+            <p>
+                Version 2.1 (the previous operational version) improved on Version 2.0 using data augmentation in the training set. 
+                By replicating days when 99th percentile rain events were observed, we can increase the occurrence of the extreme events in 
+                the training dataset substantially—to reach approximately 10% of the dataset. This resulted in substantially better training metrics
+                 over the initial internal version. This operational version uses networks trained on the augmented dataset for the 99th percentile category. 
+                 This version became the operational version on 23 December 2022, with the first 99th percentile results displayed at that time.
+            </p>
+            <img class="img-fluid" src="resources/versioning_images_2.png" alt="versioning_image_2">
+            <br>
+            <br>
+            <h3><b style="color:#e0f42b">Version 2.2</b></h3>
+            <p>Version 2.2 (now the operational version) now provides users who are interested in the most extreme (99th percentile) events with two mapping
+                 granularities—the same look and feel of Version 2.1, with the option to alternatively select a 4-category system (99th percentile only) that 
+                 focuses attention towards the most likely areas of exceedance at that level (as exemplified below). Setting the thresholds for the four categories, 
+                 or levels, is a balancing act—seeking minimize the number of false positives, while aspiring to retain the largest number of true positives. </p>
+                 <p>
+                 There is no single perfect number for any of the three category boundaries: Not Likely / Less Likely; Less Likely to Likely; and Likely to Most Likely. 
+                 While the ratio of true to false positives rises rapidly as a function of the Less Likely to Likely threshold, it runs the risk of dropping too many true positives. 
+                 Yet, it is critical to limit the number of false positives to ensure the tool is operationally useful. That said, any dropped Most Likely true positives will still 
+                 end up in the Likely category. For that reason, we settled on the following limits (subject to change in the future if warranted): Not Likely, 0.0 to 0.1; Less Likely, 
+                 0.1 to 0.2; Likely, 0.2 to 0.4; and Most Likely, 0.4 and up. In the region of 0.4, the ratio of true to false positives has improved to approximately unity for the Vote model. 
+                 Any higher and too many true positives (verified 99th percentile grid points) are dropped for little loss of residual false positives.
+            </p>
+            <img class="img-fluid" src="resources/v2-2.png" alt="versioning_image_3">
+            <br>
+            <br>
+            
+            <h3><b style="color:#e0f42b">Version 2.2.1</b></h3>
+            <p>This administrative update improves the updating of images when toggling through models at 99th percentile.</p>
+            <br>
+
+            <h3><b style="color:#e0f42b">Version 2.3.1</b></h3>
+            <p>This administrative update greatly reduces the latency of each morning run, while improving the system stability. It also includes minor improvements to how the GEFS and ECMWF EPS input fields are prepared.
+             A calendar icon has been added, it is next to the initialization date that the user can click on to input an initialization date using dropdowns to select a month, date and year as a new data point. 
+            If the user selects a date which does not have any data for it, an alert will pop up telling stating that there is no data for specified date. Date can also be reset to the current date. This added capability allows forecasters and other users to revisit earlier runs to 
+            reconstruct Atmospheric River (AR) events for reanalyses and assessments (e.g., the impactful land-falling AR of 9-10 January 2022).</p>
+            <p>We are currently evaluating this tool with operational Western-Region NOAA forecast meteorologists using near-real-time NWP forecast model ensemble 
+                members — both NCEP GEFS and ECMWF EPS (the former through NOAA’s Big Data Project and the latter via Open Data Creative Commons CC-4.0-BY license 
+                and ECMWF Terms of Use). This project was funded by the NOAA Office of Oceanic and Atmospheric Research (<a class='content-links' target='_blank' href='https://research.noaa.gov/'>OAR</a>) under the Small Business 
+                Innovative Research (<a class='content-links' target='_blank' href='https://www.sbir.gov/' >SBIR</a>) program, Federal Award Number NA21OAR0210296. The “LANDFALLING EVENT ATMOSPHERIC RIVER NEURAL NETWORK (LEARN2) FORECAST TOOL” patent application No. 17/572,534 is effective 10 August 2022.</p>
+            <br>
+
+            <h3><b style="color:#e0f42b">Version 2.3.2</b></h3>
+            <p>Based upon helpful feedback, we’ve made an important upgrade of the Landfalling Event Atmospheric River Neural Network LEARN² application to V2.3.2. Up to this point, 
+                LEARN2 presented percentile exceedance likelihoods. This product can be confusing to many—it can show large values in both high- and low-value rain areas 
+                (because it’s “easy” to exceed a low climatological threshold), and low likelihoods in high-value rainy areas (because it’s “hard to exceed a high climatological background threshold).
+                While the data may be correct, the display is counterintuitive. Rather than solely predicting percentile exceedances (of 24-hour accumulated precipitation, 
+                this version update adds the additional capability to view predicted precipitation at fixed thresholds—from 0.25” to 4.0”. This is a naturally intuitive field to interpret. </p>
+                <p>
+                As you can see below for the 24-hour period ending March 15 (12Z) at the 3” threshold, the maxima are in expected locations (e.g., mountain slopes). The right image shows
+                 the number of days in the combined PRISM, NCEP/GEFS, and ECMWF/EPS training data set where accumulated precipitation exceeded 3” in 24 hours—it is sparse at these higher fixed thresholds, 
+                 and that very sparseness was a machine learning training challenge we have successfully overcome. Version 2.3.2 adds a toggle so that the user can choose between using a static threshold 
+                 as a metric, or percentiles. The static threshold uses inches of rain as a metric with a range value that includes: .25 inches, .50 inches, .75 inches, 1 inch, 1.50 inches, 2 inches, 3 inches, 
+                 and 4 inches. The resolution shown here is 0.25 degrees.
+            </p>
+           <img width='100%' alt = 'version 2.3.2 static threshold example' src="resources/version232.png">
+            <br>
+           <br>
+            <h3><b style="color:#e0f42b">Version 3.0</b></h3>
+            <p>This version optimizes weighting of the four models (NCEP GEFS, ECMWF EPS, convolutional neural network, and densely connected neural network) using an area-wide regression scheme 
+                against the PRISM ground truth dataset that balances the model contributions (confidence-weighted votes) against the skill that they add—as a function of prediction day (1-10) and fixed thresholds. The version 
+                also includes an augmentation step for the training dataset (by replicating those days with the highest precipitation amounts) that seeks to better balance the data above and below each of the higher fixed thresholds 
+                (2”, 3”, and 4”). This achieves some modest additional skill, especially at the highest rainfall categories.
+                </p>
+
             <br>
             <br>
             <h2 id="faq">FAQ</h2>
@@ -392,9 +464,9 @@
             classification problem. That is, given a particular set of inputs, we aim to discover to which of the possible classes
             does this input belong (if any). For this problem, each class is “anomalous rainfall at a specified latitude, longitude
             pair.” The ground truth is created by examining each point of interest (a regular grid of points in Washington, Oregon,
-            and California) and determining the average (50th percentile), 60th%ile, 70th%ile, 80th%ile, and 90th%ile of the 24-hour 
+            and California) and determining the average 50th percentile, 60th percenile, 70th percenile, 80th percenile, 90th percenile, 95th percentile, and 99th percentile of the 24-hour 
             rainfall (removing all 0 rain days) at that point. A positive case is defined as exceeding a specified percentile. LEARN&sup2 
-            has been trained using values from 50th to 90th percentile.. The output of neural network for a given point will fall 
+            has been trained using values from 50th to 99th percentile.. The output of neural network for a given point will fall 
             between 0 and 1. Numbers closer to 1 indicate a prediction of the positive class (i.e., the network predicts rainfall amounts will
             cross the mean+ σ threshold at that point).</p>
 <br>
@@ -556,32 +628,37 @@
                                                  Thus, the fitness function we have selected is the average F1-score of 16 neural networks.
                                                   Each network uses inputs as defined by the genes of the individual and is trained on a random
                                                    80% of our available data. The F1-score is calculated on the remaining 20%.</p>
+                                                   <br>
+                                                   <h2 id="credits">LEARN2 Development Team</h2>
+
+                                                   <hr>
+            <ul>
+                <li>Dr. Philip “Phil” Ardanuy: Principal Investigator</li>
+                <li>Dr. Sibren Isaacman: Co-Investigator</li>
+                <li>Mr. Darin Mister and Justin Hicks: Research and Development</li>
+                <li>Mr. Ethan Carton: infrastructure and AWS instance maintenance</li>
+                <li>Mr. Zachary “Zach” Davis: Graphical User Interface</li>
+                <li>Andrew “Drew” Pesall: Graphical User Interface</li>
+                <li>Dr. Bradley “Brad” Colman: Subject Matter Expert</li>
+            </ul>
             <!-- End User Guide -->
+        
          </div>
        
             </div>
             <br>
             
         </div>
+        
         </div>
-        <div style="padding-bottom: 50%;"></div>
+        <br>
+            
+            <hr>
+        <div class="extension footer" id="ext-id">
+            <a href='https://innovim.com/' target="_blank"><img src="resources/innovim_logo.png"></a>
+        </div>
     </div>
     <script src="js/bootstrap.bundle.js"></script>
-    <script>
-       jQuery(document).ready(function(){
-    $(".targetDiv").hide();
-});
-
-
-jQuery(function(){
-  
-   
-   jQuery('.showSingle').click(function(){
-      jQuery('.targetDiv').hide('.cnt');
-      jQuery('#GI-'+$(this).attr('target')).slideToggle();
-
-   }); 
-});
-          </script>
+    <script src="js/generic.js"></script>
 </body>
 </html>

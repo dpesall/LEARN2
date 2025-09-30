@@ -7,6 +7,11 @@ const https = require('https');
 const AWS = require('aws-sdk');
 const nodemailer = require('nodemailer');
 
+const BUFFER_SIZE = 70;
+const TEN_MINUTES = 10 * 60 * 1000;
+
+let mostRecentDateWithData = '';
+
 app.use(express.static('public/'));
 
 AWS.config.update({
@@ -22,7 +27,7 @@ app.get('/user_guide', function(req,res) {
     });
 });
 
-const bucket = process.env.BUCKET_NAME;
+let bucket = process.env.BUCKET_NAME;
 const s3 = new AWS.S3();
 let csvData = [];
 async function makePromiseSet(fileNames, functionName, start) {
@@ -42,9 +47,9 @@ async function makePromiseSet(fileNames, functionName, start) {
     ];
 }
 
-let imageURLS = Array(50);
+let imageURLS = Array(BUFFER_SIZE);
 function gatherURL(fileNames, _callback) {
-    for(let i = 0; i < 50; i++) {
+    for(let i = 0; i < fileNames.length; i++) {
         imageURLS[i] = s3.getSignedUrl('getObject', {
             Bucket: bucket,
             Key: fileNames[i],
@@ -56,10 +61,10 @@ function gatherURL(fileNames, _callback) {
 
 function gatherCSV(csvNames, _callback) {
     let csvStreams = [];
-    for(let i = 0; i < 50; i++) {
+    for(let i = 0; i < csvNames.length; i++) {
         let fileData = [];
         csvStreams[i] = s3.getObject({Bucket: bucket, Key: csvNames[i]}).createReadStream().on('error', err => {
-            // console.log('error');
+            // console.log(err);
         }).on('data', data => {
             // console.log('success');
         });
@@ -68,37 +73,81 @@ function gatherCSV(csvNames, _callback) {
                 fileData.push(data);
             }).on('end', count => {
                 csvData[i] = fileData;
-                if(i === 49) {
+                if(i === (csvNames.length - 1)) {
                     _callback();
                 }
         });
     }
 }
 
-app.get('/aws2', async (req, res) => {
+app.get('/retrieve-csv-data', async (req, res) => {
     let fileBase = req.query.file;
     let csvNames = [];
-    for(let j = 0; j < 5; j++) {
-        let percentile = '';
-        switch(j) {
-            case 0:
-                percentile = '_50th.csv';
-                break;
-            case 1:
-                percentile = '_60th.csv';
-                break;
-            case 2:
-                percentile = '_70th.csv';
-                break;
-            case 3:
-                percentile = '_80th.csv';
-                break;
-            case 4:
-                percentile = '_90th.csv';
-                break;
+    let thresholdType = req.query.threshold;
+    if(thresholdType === 'percentile') {
+        for(let j = 0; j < 7; j++) {
+            let percentile = '';
+            switch(j) {
+                case 0:
+                    percentile = '_50th.csv';
+                    break;
+                case 1:
+                    percentile = '_60th.csv';
+                    break;
+                case 2:
+                    percentile = '_70th.csv';
+                    break;
+                case 3:
+                    percentile = '_80th.csv';
+                    break;
+                case 4:
+                    percentile = '_90th.csv';
+                    break;
+                case 5:
+                    percentile = '_95th.csv';
+                    break;
+                case 6:
+                    percentile = '_99th.csv'
+                    break;
+            }
+            for(let i = 1; i <= 10; i++) {
+                csvNames.push(fileBase + i + percentile);
+            }
         }
-        for(let i = 1; i <= 10; i++) {
-            csvNames.push(fileBase + i + percentile);
+    }
+    if(thresholdType === 'static') {
+        for(let j = 0; j < 8; j++) {
+            let suffix = '';
+            switch(j) {
+                case 0:
+                    suffix = '_0.25_inches.csv';
+                    break;
+                case 1:
+                    suffix = '_00.5_inches.csv';
+                    break;
+                case 2:
+                    suffix = '_0.75_inches.csv';
+                    break;
+                case 3:
+                    suffix = '_01.0_inches.csv';
+                    break;
+                case 4:
+                    suffix = '_01.5_inches.csv';
+                    break;
+                case 5:
+                    suffix = '_02.0_inches.csv';
+                    break;
+                case 6:
+                    suffix = '_03.0_inches.csv';
+                    break;
+                case 7:
+                    suffix = '_04.0_inches.csv';
+                    break;
+            }
+            for(let i = 1; i <= 10; i++) {
+                csvNames.push(fileBase + i + suffix);
+            }
+            //console.log(fileBase + '1' + suffix);
         }
     }
     gatherCSV(csvNames, function() {
@@ -113,7 +162,6 @@ function s3ListObjects(params, _callback) {
             console.log("listS3Objects Error:", err);
         } else {
             let contents = data.Contents;
-            console.log(contents[1].Key);
             s3DataContents = s3DataContents.concat(contents);
             if (data.IsTruncated) {
                 params.Marker = contents[contents.length / 4].Key;
@@ -128,19 +176,23 @@ function s3ListObjects(params, _callback) {
 let recentDate = '';
 function mostRecentAvailableDate(dateObject, dateOffset, prefix, suffix, _callback) {
     let date = dateObject.getFullYear() + '-' + pad(dateObject.getMonth() + 1) + '-' + pad(dateObject.getDate());
+
+    let todayObject = new Date();
+    let today = todayObject.getFullYear() + '-' + pad(todayObject.getMonth() + 1) + '-' + pad(todayObject.getDate());
+
+    if(today === date && mostRecentDateWithData !== '') {
+        date = mostRecentDateWithData;
+    }
+
     let keyName = prefix + date + suffix;
+
     s3.headObject({Bucket: bucket, Key: keyName}, function(err, metadata) {
         if(err) {
             dateObject.setDate(dateObject.getDate() - 1);
             mostRecentAvailableDate(dateObject, dateOffset, prefix, suffix, _callback);
         } else {
-            if(dateOffset > 0) {
-                dateObject.setDate(dateObject.getDate() - 1);
-                mostRecentAvailableDate(dateObject, dateOffset - 1, prefix, suffix, _callback);
-            } else {
-                recentDate = date;
-                _callback();
-            }
+            recentDate = date;
+            _callback();
         }
     });
 }
@@ -149,12 +201,58 @@ function pad(n) {
     return (n < 10) ? ('0' + n) : n;
 }
 
-app.get('/aws3', async (req, res) => {
-    let dateObject = new Date();
-    let dateOffset = parseInt(req.query.offset);
+const templatePrefix = '0.25_Vote_';
+const templateSuffix = '_1_60th.png';
+
+// Reloading the most recently available date with data to speed up initial page loading time
+setMostRecentDate(new Date());
+setInterval(() => {
+    setMostRecentDate(new Date());
+}, TEN_MINUTES);
+
+function setMostRecentDate(dateObject) {
+    let date = dateObject.getFullYear() + '-' + pad(dateObject.getMonth() + 1) + '-' + pad(dateObject.getDate());
+    let keyName = templatePrefix + date + templateSuffix;
+    s3.headObject({Bucket: bucket, Key: keyName}, function(err, metadata) {
+        if(err) {
+            dateObject.setDate(dateObject.getDate() - 1);
+            setMostRecentDate(dateObject, templatePrefix, templateSuffix);
+        } else {
+            mostRecentDateWithData = date;
+            //console.log(mostRecentDateWithData)
+        }
+    });
+}
+
+app.get('/data-exists-at-date', async (req, res) => {
     let prefix = req.query.prefix + req.query.model;
     let suffix = '_1_' + req.query.suffix + '.png';
-    mostRecentAvailableDate(dateObject, dateOffset, prefix, suffix, function() {
+    let keyName = prefix + req.query.date + suffix;
+    const exists = await s3.headObject({
+            Bucket: bucket,
+            Key: keyName,
+        })
+        .promise()
+        .then(
+            () => true,
+            err => {
+                if (err.code === 'NotFound') {
+                    return false;
+                }
+                throw err;
+            }
+        );
+    res.send(exists);
+});
+
+app.get('/most-recent-available-date', async (req, res) => {
+    let dateObject = new Date();
+    let dateOffset = parseInt(req.query.offset);
+    let dateObjectAdjusted = dateObject;
+    dateObjectAdjusted.setDate(dateObjectAdjusted.getDate() - dateOffset);
+    let prefix = req.query.prefix + req.query.model;
+    let suffix = '_1_' + req.query.suffix + '.png';
+    mostRecentAvailableDate(dateObjectAdjusted, dateOffset, prefix, suffix, function() {
         res.send(recentDate);
     });
 });
@@ -178,7 +276,7 @@ app.get('/feedback', async (req, res) => {
 
     let mailOptions = {
         from: 'learn2.feedback@outlook.com',
-        to: 'pesallandrew@gmail.com',
+        to: 'pesallandrew@gmail.com, brad.r.colman@gmail.com, pardanuy@innovim.com',
         subject: 'LEARN2 Feedback Submission',
         text: emailText
     };
@@ -195,31 +293,84 @@ app.get('/feedback', async (req, res) => {
     });
 });
 
-app.get('/aws', async (req, res) => {
+let standard = true;
+app.get('/retrieve-img-urls', async (req, res) => {
     let rootName = req.query.file;
+    let thresholdType = req.query.threshold;
+    standard = req.query.standard === 'true';
     let fileNames = [];
-
-    for(let j = 0; j < 5; j++) {
-        let percentile = '';
-        switch(j) {
-            case 0:
-                percentile = '_50th.png';
-                break;
-            case 1:
-                percentile = '_60th.png';
-                break;
-            case 2:
-                percentile = '_70th.png';
-                break;
-            case 3:
-                percentile = '_80th.png';
-                break;
-            case 4:
-                percentile = '_90th.png';
-                break;
+    if(thresholdType === 'percentile') {
+        for(let j = 0; j < 7; j++) {
+            let percentile = '';
+            switch(j) {
+                case 0:
+                    percentile = '_50th.png';
+                    break;
+                case 1:
+                    percentile = '_60th.png';
+                    break;
+                case 2:
+                    percentile = '_70th.png';
+                    break;
+                case 3:
+                    percentile = '_80th.png';
+                    break;
+                case 4:
+                    percentile = '_90th.png';
+                    break;
+                case 5:
+                    percentile = '_95th.png';
+                    break;
+                case 6:
+                    percentile = '_99th.png';
+                    break;
+            }
+            if(j === 6 && !standard) {
+                for(let i = 1; i <= 10; i++) {
+                    let newName = rootName + i + '_99th_categories.png';
+                    fileNames.push(newName);
+                    //console.log(rootName + i + '_categories' + percentile);
+                }
+            } else {
+                for(let i = 1; i <= 10; i++) {
+                    fileNames.push(rootName + i + percentile);
+                }
+            }
         }
-        for(let i = 1; i <= 10; i++) {
-            fileNames.push(rootName + i + percentile);
+    }
+    if(thresholdType === 'static') {
+        for(let j = 0; j < 8; j++) {
+            let suffix = '';
+            switch(j) {
+                case 0:
+                    suffix = '_0.25_inches.png';
+                    break;
+                case 1:
+                    suffix = '_00.5_inches.png';
+                    break;
+                case 2:
+                    suffix = '_0.75_inches.png';
+                    break;
+                case 3:
+                    suffix = '_01.0_inches.png';
+                    break;
+                case 4:
+                    suffix = '_01.5_inches.png';
+                    break;
+                case 5:
+                    suffix = '_02.0_inches.png';
+                    break;
+                case 6:
+                    suffix = '_03.0_inches.png';
+                    break;
+                case 7:
+                    suffix = '_04.0_inches.png';
+                    break;
+            }
+            for(let i = 1; i <= 10; i++) {
+                fileNames.push(rootName + i + suffix);
+            }
+            //console.log(rootName + '1' + suffix);
         }
     }
     gatherURL(fileNames, function() {
@@ -228,29 +379,40 @@ app.get('/aws', async (req, res) => {
 });
 
 const args = process.argv;
-if(args[2] !== 'https') {
-    app.listen(8080,()=>{
-        console.log('Web Server running on port', 8080);
-    });
-} else {
-    const privateKey = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/privkey.pem', 'utf8');
-    const certificate = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/cert.pem', 'utf8');
-    const ca = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/chain.pem', 'utf8');
-
-    const credentials = {
-        key: privateKey,
-        cert: certificate,
-        ca: ca
+switch(args[2]) {
+    case 'custom-s3': {
+        bucket = args[3] || process.env.BUCKET_NAME;
+        app.listen(8080,()=>{
+            console.log('Web Server running on port', 8080);
+        });
+        break;
     }
+    case 'https': {
+        const privateKey = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/privkey.pem', 'utf8');
+        const certificate = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/cert.pem', 'utf8');
+        const ca = fs.readFileSync('/etc/letsencrypt/live/learn2.innovim.com/chain.pem', 'utf8');
 
-    const httpPort = 80
-    const httpsPort = 443
-    const httpsServer = https.createServer(credentials, app);
-    const httpServer = http.createServer(app);
-    httpServer.listen(httpPort, () => {
-        console.log("HTTP Server running on port", httpPort);
-    });
-    httpsServer.listen(httpsPort, () => {
-        console.log("HTTPS Server running on port", httpsPort);
-    });
+        const credentials = {
+            key: privateKey,
+            cert: certificate,
+            ca: ca
+        }
+
+        const httpPort = 80
+        const httpsPort = 443
+        const httpsServer = https.createServer(credentials, app);
+        const httpServer = http.createServer(app);
+        httpServer.listen(httpPort, () => {
+            console.log("HTTP Server running on port", httpPort);
+        });
+        httpsServer.listen(httpsPort, () => {
+            console.log("HTTPS Server running on port", httpsPort);
+        });
+        break;
+    }
+    default: {
+        app.listen(8080,()=>{
+            console.log('Web Server running on port', 8080);
+        });
+    }
 }
